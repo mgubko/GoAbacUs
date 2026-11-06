@@ -131,10 +131,37 @@ void main() {
 
   test('docked beads hold against a moderate tilt', () {
     final p = AbacusPhysics()..setRowCount(0, 3);
-    // ~17 degrees: enough to slide a free bead, not enough to undock.
-    p.gravityAlong = 2.9;
+    // ~14 degrees: enough to slide a free bead, not enough to undock.
+    p.gravityAlong = 2.4;
     p.gravityNormal = 9.4;
     run(p, 1);
     expect(p.leftStack(0), 3);
+  });
+
+  test('a free bead slides at the tilt where a docked stack still holds', () {
+    final p = AbacusPhysics();
+    p.x[0][0] = 0.1;
+    p.gravityAlong = -2.4;
+    p.gravityNormal = 9.5;
+    run(p, 1);
+    expect(p.x[0][0], closeTo(p.config.halfBead, 1e-4));
+  });
+
+  test('tilting back the other way releases a full left stack', () {
+    final p = AbacusPhysics()..setRowCount(0, 10);
+    p.gravityAlong = 3.0; // ~18 degrees to the right
+    p.gravityNormal = 9.3;
+    run(p, 2);
+    expect(p.countedBeads(0), 0);
+  });
+
+  test('a finger pulls a bead out of a full left stack', () {
+    final p = AbacusPhysics()..setRowCount(0, 10);
+    final g = Grab(0, 9, 0, p.x[0][9]);
+    p.grabs[1] = g;
+    run(p, 0.5, (p) => g.target += 0.001);
+    p.grabs.clear();
+    run(p, 1);
+    expect(p.countedBeads(0), 9);
   });
 }
