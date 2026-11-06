@@ -1,0 +1,9 @@
+{
+  "@@locale": "es",
+  "appTitle": "GoAbacUs",
+  "resetTooltip": "Poner el ábaco a cero",
+  "tiltOn": "Inclinación: activada",
+  "tiltOff": "Inclinación: desactivada",
+  "soundOn": "Sonido: activado",
+  "soundOff": "Sonido: desactivado"
+}

@@ -1,0 +1,9 @@
+{
+  "@@locale": "ru",
+  "appTitle": "GoAbacUs",
+  "resetTooltip": "Сбросить счёты",
+  "tiltOn": "Наклон: включён",
+  "tiltOff": "Наклон: выключен",
+  "soundOn": "Звук: включён",
+  "soundOff": "Звук: выключен"
+}

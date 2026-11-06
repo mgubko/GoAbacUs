@@ -1,0 +1,9 @@
+{
+  "@@locale": "en",
+  "appTitle": "GoAbacUs",
+  "resetTooltip": "Clear the abacus",
+  "tiltOn": "Tilt: on",
+  "tiltOff": "Tilt: off",
+  "soundOn": "Sound: on",
+  "soundOff": "Sound: off"
+}

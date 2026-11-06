@@ -1,0 +1,9 @@
+{
+  "@@locale": "fr",
+  "appTitle": "GoAbacUs",
+  "resetTooltip": "Remettre le boulier à zéro",
+  "tiltOn": "Inclinaison : activée",
+  "tiltOff": "Inclinaison : désactivée",
+  "soundOn": "Son : activé",
+  "soundOff": "Son : désactivé"
+}

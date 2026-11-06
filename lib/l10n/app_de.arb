@@ -1,0 +1,9 @@
+{
+  "@@locale": "de",
+  "appTitle": "GoAbacUs",
+  "resetTooltip": "Abakus leeren",
+  "tiltOn": "Neigen: an",
+  "tiltOff": "Neigen: aus",
+  "soundOn": "Ton: an",
+  "soundOff": "Ton: aus"
+}
