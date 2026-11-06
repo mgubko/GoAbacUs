@@ -6,13 +6,16 @@ class AbacusConfig {
   const AbacusConfig({
     this.rows = 10,
     this.beadsPerRow = 10,
-    this.wireLength = 0.32,
+    this.wireLength = 0.29,
     this.beadLength = 0.018,
     this.beadMass = 0.008,
-    this.beadRestitution = 0.35,
-    this.wallRestitution = 0.28,
-    this.staticFriction = 0.11,
-    this.kineticFriction = 0.075,
+    this.beadRestitution = 0.2,
+    this.wallRestitution = 0.25,
+    this.staticFriction = 0.2,
+    this.kineticFriction = 0.12,
+    this.tiltDeadZone = 0.6,
+    this.adhesion = 1.0,
+    this.captureSpeed = 1.2,
     this.airDrag = 0.35,
     this.grabStiffness = 45.0,
     this.grabDampingRatio = 0.9,
@@ -36,6 +39,18 @@ class AbacusConfig {
   /// Coulomb friction of a bead on its wire.
   final double staticFriction;
   final double kineticFriction;
+
+  /// Gravity along the wires below this (m/s², about 3.5°) is ignored, so a
+  /// slightly unsteady hand does not move the beads.
+  final double tiltDeadZone;
+
+  /// Beads resting against the frame, or against a stack of beads resting
+  /// against the frame, are held by this extra acceleration (m/s²).
+  final double adhesion;
+
+  /// Below this approach speed (m/s) a bead hitting the frame or the stack at
+  /// the frame does not bounce: it docks and stays there.
+  final double captureSpeed;
 
   /// Small velocity-proportional loss (1/s): air and wire wobble.
   final double airDrag;
@@ -108,6 +123,33 @@ class AbacusPhysics {
   static const double _bounceSpeed = 0.05;
   static const double _impactSpeed = 0.03;
   static const int _iterations = 12;
+  static const double _touch = 0.0005;
+
+  /// Number of beads docked at the left frame (beads 0..n-1 touching it and
+  /// each other).
+  int leftStack(int row) {
+    final xs = x[row];
+    if (xs[0] - config.halfBead > _touch) return 0;
+    var n = 1;
+    while (n < xs.length && xs[n] - xs[n - 1] - config.beadLength <= _touch) {
+      n++;
+    }
+    return n;
+  }
+
+  /// Index of the first bead docked at the right frame (beadsPerRow if none).
+  int rightStack(int row) {
+    final xs = x[row];
+    final last = xs.length - 1;
+    if (config.wireLength - config.halfBead - xs[last] > _touch) {
+      return xs.length;
+    }
+    var i = last;
+    while (i > 0 && xs[i] - xs[i - 1] - config.beadLength <= _touch) {
+      i--;
+    }
+    return i;
+  }
 
   /// Puts every bead to the right side: the abacus shows zero.
   void clear() {
@@ -208,13 +250,20 @@ class AbacusPhysics {
     final kinetic = c.kineticFriction * normal;
     final static = c.staticFriction * normal;
     final damping = 2 * c.grabDampingRatio * math.sqrt(c.grabStiffness * m);
+    final along = gravityAlong.abs() <= c.tiltDeadZone
+        ? 0.0
+        : gravityAlong - gravityAlong.sign * c.tiltDeadZone;
 
     for (var r = 0; r < c.rows; r++) {
       final xs = x[r];
       final vs = v[r];
-      final accel = List.filled(c.beadsPerRow, gravityAlong);
+      final accel = List.filled(c.beadsPerRow, along);
+      final grabbed = List.filled(c.beadsPerRow, false);
+      final left = leftStack(r);
+      final right = rightStack(r);
       for (final g in grabs.values) {
         if (g.row != r) continue;
+        grabbed[g.bead] = true;
         final i = g.bead;
         var f =
             c.grabStiffness * (g.target + g.offset - xs[i]) +
@@ -227,8 +276,13 @@ class AbacusPhysics {
         final a = accel[i];
         var s = vs[i];
         if (s.abs() <= _restSpeed) {
-          // Sticking: it only starts to slide if pushed over static friction.
-          if (a.abs() > static) {
+          // Sticking: it only starts to slide if pushed over static friction,
+          // plus adhesion when it is docked and pulled away from the frame.
+          var hold = static;
+          if (!grabbed[i] && ((i < left && a > 0) || (i >= right && a < 0))) {
+            hold += c.adhesion;
+          }
+          if (a.abs() > hold) {
             s = (a - a.sign * kinetic) * dt;
           } else {
             s = 0;
@@ -246,12 +300,12 @@ class AbacusPhysics {
         xs[i] += s * dt;
       }
 
-      _resolveContacts(r, impacts);
+      _resolveContacts(r, impacts, left, right);
     }
     return impacts;
   }
 
-  void _resolveContacts(int r, List<Impact> impacts) {
+  void _resolveContacts(int r, List<Impact> impacts, int left, int right) {
     final c = config;
     final xs = x[r];
     final vs = v[r];
@@ -268,7 +322,8 @@ class AbacusPhysics {
           if (first && -vs[0] > _impactSpeed) {
             impacts.add(Impact(r, 0, -vs[0], ImpactKind.frame));
           }
-          vs[0] = -vs[0] > _bounceSpeed ? -vs[0] * c.wallRestitution : 0;
+          // Slow arrivals dock at the frame instead of bouncing.
+          vs[0] = -vs[0] > c.captureSpeed ? -vs[0] * c.wallRestitution : 0;
         }
       }
       if (xs[n - 1] > hi) {
@@ -277,7 +332,7 @@ class AbacusPhysics {
           if (first && vs[n - 1] > _impactSpeed) {
             impacts.add(Impact(r, c.wireLength, vs[n - 1], ImpactKind.frame));
           }
-          vs[n - 1] = vs[n - 1] > _bounceSpeed
+          vs[n - 1] = vs[n - 1] > c.captureSpeed
               ? -vs[n - 1] * c.wallRestitution
               : 0;
         }
@@ -295,7 +350,12 @@ class AbacusPhysics {
                 Impact(r, xs[i] + c.halfBead, closing, ImpactKind.bead),
               );
             }
-            final e = closing > _bounceSpeed ? c.beadRestitution : 0.0;
+            // A bead arriving at the stack docked at the frame joins it.
+            final docking =
+                (i < left || i + 1 >= right) && closing <= c.captureSpeed;
+            final e = closing > _bounceSpeed && !docking
+                ? c.beadRestitution
+                : 0.0;
             final j = (1 + e) * closing / 2;
             vs[i] -= j;
             vs[i + 1] += j;

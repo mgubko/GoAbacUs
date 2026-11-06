@@ -13,7 +13,7 @@ class TiltSensor {
   StreamSubscription<AccelerometerEvent>? _sub;
 
   /// Display rotation: 0, 1 (90°), 2 (180°), 3 (270°), in Android terms.
-  int _rotation = 1;
+  int _rotation = 0;
 
   /// Low-pass filtered gravity in screen coordinates.
   double along = 0;
@@ -60,6 +60,12 @@ class TiltSensor {
     const k = 0.25;
     along += (g - along) * k;
     normal += (n - normal) * k;
+  }
+
+  void pause() => _sub?.pause();
+
+  void resume() {
+    if (_sub?.isPaused ?? false) _sub!.resume();
   }
 
   void dispose() => _sub?.cancel();

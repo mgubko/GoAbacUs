@@ -108,6 +108,29 @@ class _AbacusViewState extends State<AbacusView>
   void didChangeMetrics() => c.tilt.refreshRotation();
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      c.sound.setPaused(false);
+      c.tilt.resume();
+      c.tilt.refreshRotation();
+      if (!_ticker.isActive) {
+        _last = Duration.zero;
+        _ticker.start();
+      }
+      // GPU textures can be dropped while in the background: redraw them.
+      setState(() => _art = null);
+    } else {
+      // Leaving the app: stop simulating, release fingers, silence sounds.
+      if (_ticker.isActive) _ticker.stop();
+      _pending.clear();
+      _lastMove.clear();
+      c.physics.grabs.clear();
+      c.sound.setPaused(true);
+      c.tilt.pause();
+    }
+  }
+
+  @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _ticker.dispose();

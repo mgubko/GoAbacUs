@@ -16,12 +16,22 @@ class AbacusLayout {
       size.height - 16,
     );
     frameThickness = math.min(avail.width, avail.height) * 0.06;
-    frame = avail;
-    inner = avail.deflate(frameThickness);
-    spacing = inner.height / config.rows;
-    scale = inner.width / config.wireLength;
+    final innerWidth = avail.width - 2 * frameThickness;
+    scale = innerWidth / config.wireLength;
     beadWidth = config.beadLength * scale;
-    beadHeight = math.min(spacing * 0.88, beadWidth * 1.35);
+    // Compact turned beads: taller than they are thick. Rows are as tall as
+    // the beads need; the frame does not stretch to fill a tall screen.
+    final maxSpacing = (avail.height - 2 * frameThickness) / config.rows;
+    spacing = math.min(maxSpacing, beadWidth * 1.6 / 0.85);
+    beadHeight = math.min(spacing * 0.85, beadWidth * 1.6);
+    final frameHeight = spacing * config.rows + 2 * frameThickness;
+    frame = Rect.fromLTWH(
+      avail.left,
+      avail.top + (avail.height - frameHeight) / 2,
+      avail.width,
+      frameHeight,
+    );
+    inner = frame.deflate(frameThickness);
     digitsX = frame.right + digitColumn / 2 + 4;
   }
 

@@ -41,7 +41,7 @@ void main() {
     p.gravityAlong = -0.5; // ~3 degrees towards the left
     run(p, 1);
     expect(p.value, 0);
-    p.gravityAlong = -3.0; // ~18 degrees
+    p.gravityAlong = -5.0; // ~30 degrees: beats friction and docking
     run(p, 2);
     expect(p.countedBeads(0), 10);
     expect(p.x[0][0], closeTo(p.config.halfBead, 1e-4));
@@ -101,5 +101,40 @@ void main() {
       impacts.addAll(p.step(1 / 240));
     }
     expect(impacts.any((e) => e.kind == ImpactKind.frame), isTrue);
+  });
+
+  test('tilt inside the dead zone does nothing, even on a free bead', () {
+    final p = AbacusPhysics();
+    p.x[0][0] = 0.1; // a lone bead in the middle of the wire
+    p.gravityAlong = 0.55;
+    run(p, 1);
+    expect(p.x[0][0], closeTo(0.1, 1e-9));
+  });
+
+  test('a slow bead docks at the frame without bouncing', () {
+    final p = AbacusPhysics();
+    p.x[0][0] = 0.1;
+    p.v[0][0] = -0.8;
+    run(p, 1);
+    expect(p.x[0][0], closeTo(p.config.halfBead, 1e-6));
+    expect(p.leftStack(0), 1);
+  });
+
+  test('a slow bead docks onto the stack at the frame', () {
+    final p = AbacusPhysics()..setRowCount(0, 3);
+    p.x[0][3] = 0.12;
+    p.v[0][3] = -0.9;
+    run(p, 1);
+    expect(p.leftStack(0), 4);
+    expect(p.countedBeads(0), 4);
+  });
+
+  test('docked beads hold against a moderate tilt', () {
+    final p = AbacusPhysics()..setRowCount(0, 3);
+    // ~17 degrees: enough to slide a free bead, not enough to undock.
+    p.gravityAlong = 2.9;
+    p.gravityNormal = 9.4;
+    run(p, 1);
+    expect(p.leftStack(0), 3);
   });
 }
