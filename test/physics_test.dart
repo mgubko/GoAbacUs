@@ -164,4 +164,33 @@ void main() {
     run(p, 1);
     expect(p.countedBeads(0), 9);
   });
+
+  test('pushing a group or pressing against the frame is silent', () {
+    final p = AbacusPhysics();
+    // Finger pushes bead 9 left: the whole row of 10 moves as one group.
+    final g = Grab(0, 9, 0, p.x[0][9]);
+    p.grabs[1] = g;
+    final impacts = <Impact>[];
+    for (var i = 0; i < 240; i++) {
+      g.target -= 0.0008;
+      impacts.addAll(p.step(1 / 240));
+    }
+    // Keep pressing against the left frame for another second.
+    for (var i = 0; i < 240; i++) {
+      impacts.addAll(p.step(1 / 240));
+    }
+    // At most one knock when the group first reaches the frame.
+    expect(impacts.length, lessThanOrEqualTo(1));
+  });
+
+  test('a bead hitting a group makes exactly one click', () {
+    final p = AbacusPhysics()..setRowCount(0, 3);
+    p.x[0][3] = 0.15;
+    p.v[0][3] = -0.6;
+    final impacts = <Impact>[];
+    for (var i = 0; i < 480; i++) {
+      impacts.addAll(p.step(1 / 240));
+    }
+    expect(impacts.where((e) => e.kind == ImpactKind.bead).length, 1);
+  });
 }

@@ -2,11 +2,10 @@
 
 Run:  python3 tool/gen_sounds.py   -> writes assets/sounds/*.wav
 
-bone_*: bead hits bead. A soft, rounded wooden "tok": a ~1 ms contact pulse
-        (which naturally rolls off the harsh highs) exciting a few mid
-        resonances that die out within a few milliseconds.
-wood_*: bead hits the wooden frame. A deeper, hollow knock of the frame bar
-        with a little of the bead's own "tok" on top.
+bone_*: bead hits bead (solid hardwood). A dull "tock": a ~1.5 ms contact
+        pulse exciting low-mid resonances that die within a few ms.
+wood_*: bead hits the solid frame bar: a lower, damped knock with a little
+        of the bead's own "tock" on top.
 """
 import os
 import wave
@@ -47,26 +46,28 @@ def lowpass(s, cutoff):
 
 
 def bead(v):
-    s = modal(0.08, 0.9 + 0.15 * v, [
-        (1250, 0.010, 0.6),
-        (2150, 0.006, 1.0),
-        (3300, 0.004, 0.55),
-        (4600, 0.0025, 0.25),
-    ], noise=0.05)
-    return lowpass(s, 5000)
+    # Solid hardwood bead on bead: short, dull "tock", no ringing.
+    s = modal(0.06, 1.4 + 0.2 * v, [
+        (680, 0.0055, 0.8),
+        (1180, 0.0040, 1.0),
+        (1900, 0.0026, 0.5),
+        (2900, 0.0016, 0.2),
+    ], noise=0.02)
+    return lowpass(lowpass(s, 2800), 2800)
 
 
 def frame(v):
-    s = modal(0.2, 1.6 + 0.2 * v, [
-        (190, 0.045, 0.7),
-        (360, 0.032, 1.0),
-        (640, 0.020, 0.7),
-        (1080, 0.012, 0.45),
-        (1700, 0.007, 0.25),
-    ], noise=0.03)
+    # Bead on the solid frame bar: lower and a little longer, still damped.
+    s = modal(0.12, 2.0 + 0.25 * v, [
+        (160, 0.022, 0.7),
+        (300, 0.016, 1.0),
+        (540, 0.011, 0.7),
+        (880, 0.007, 0.4),
+        (1350, 0.004, 0.2),
+    ], noise=0.015)
     b = bead(v)
-    s[: len(b)] += 0.25 * b / np.max(np.abs(b)) * np.max(np.abs(s))
-    return lowpass(s, 3500)
+    s[: len(b)] += 0.3 * b / np.max(np.abs(b)) * np.max(np.abs(s))
+    return lowpass(lowpass(s, 2200), 2200)
 
 
 def write(name, s, peak):

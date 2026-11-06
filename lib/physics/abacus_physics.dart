@@ -121,7 +121,7 @@ class AbacusPhysics {
 
   static const double _restSpeed = 1e-4;
   static const double _bounceSpeed = 0.05;
-  static const double _impactSpeed = 0.03;
+  static const double _impactSpeed = 0.05;
   static const int _iterations = 12;
   static const double _touch = 0.0005;
 
@@ -259,6 +259,7 @@ class AbacusPhysics {
       final vs = v[r];
       final accel = List.filled(c.beadsPerRow, along);
       final grabbed = List.filled(c.beadsPerRow, false);
+      final touching = _contacts(r);
       final left = leftStack(r);
       final right = rightStack(r);
       for (final g in grabs.values) {
@@ -300,12 +301,41 @@ class AbacusPhysics {
         xs[i] += s * dt;
       }
 
-      _resolveContacts(r, impacts, left, right);
+      _resolveContacts(r, impacts, left, right, touching);
     }
     return impacts;
   }
 
-  void _resolveContacts(int r, List<Impact> impacts, int left, int right) {
+  /// Which contacts were already closed before this step: [0] left frame,
+  /// [i] beads i-1 and i, [n] right frame. Only newly closed contacts make a
+  /// sound; beads pressed together or pushed as a group stay silent.
+  List<bool> _contacts(int r) {
+    // A contact counts as closed when the gap is (almost) zero and the two
+    // sides are not rushing together; a fast bead that is just about to hit
+    // is still a new impact.
+    final xs = x[r];
+    final vs = v[r];
+    final n = xs.length;
+    final t = List.filled(n + 1, false);
+    t[0] = xs[0] - config.halfBead <= _touch && -vs[0] <= _impactSpeed;
+    for (var i = 1; i < n; i++) {
+      t[i] =
+          xs[i] - xs[i - 1] - config.beadLength <= _touch &&
+          vs[i - 1] - vs[i] <= _impactSpeed;
+    }
+    t[n] =
+        config.wireLength - config.halfBead - xs[n - 1] <= _touch &&
+        vs[n - 1] <= _impactSpeed;
+    return t;
+  }
+
+  void _resolveContacts(
+    int r,
+    List<Impact> impacts,
+    int left,
+    int right,
+    List<bool> touching,
+  ) {
     final c = config;
     final xs = x[r];
     final vs = v[r];
@@ -319,7 +349,7 @@ class AbacusPhysics {
       if (xs[0] < lo) {
         xs[0] = lo;
         if (vs[0] < 0) {
-          if (first && -vs[0] > _impactSpeed) {
+          if (first && !touching[0] && -vs[0] > _impactSpeed) {
             impacts.add(Impact(r, 0, -vs[0], ImpactKind.frame));
           }
           // Slow arrivals dock at the frame instead of bouncing.
@@ -329,7 +359,7 @@ class AbacusPhysics {
       if (xs[n - 1] > hi) {
         xs[n - 1] = hi;
         if (vs[n - 1] > 0) {
-          if (first && vs[n - 1] > _impactSpeed) {
+          if (first && !touching[n] && vs[n - 1] > _impactSpeed) {
             impacts.add(Impact(r, c.wireLength, vs[n - 1], ImpactKind.frame));
           }
           vs[n - 1] = vs[n - 1] > c.captureSpeed
@@ -345,7 +375,7 @@ class AbacusPhysics {
           xs[i + 1] += overlap / 2;
           final closing = vs[i] - vs[i + 1];
           if (closing > 0) {
-            if (first && closing > _impactSpeed) {
+            if (first && !touching[i + 1] && closing > _impactSpeed) {
               impacts.add(
                 Impact(r, xs[i] + c.halfBead, closing, ImpactKind.bead),
               );
