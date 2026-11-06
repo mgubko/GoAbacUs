@@ -34,6 +34,16 @@ flutter run                 # на подключённом планшете
 - тег `v1.2.3` или ручной запуск: **подписанные AAB (для Google Play) и APK**,
   артефакт `goabacus-release`; для тега ещё и GitHub Release с файлами.
 
+### iPad / iPhone
+
+`.github/workflows/ios.yml` собирает **неподписанный .ipa** (артефакт
+`goabacus-ios-unsigned`) по тегу `v*` или вручную: *Actions → iOS build → Run workflow*.
+macOS-сборка в приватном репозитории тратит минуты Actions в 10 раз быстрее, поэтому не на каждый push.
+
+Установить неподписанный .ipa на iPad можно через Sideloadly или AltStore с вашим Apple ID
+(бесплатный аккаунт: приложение работает 7 дней, потом переустановить).
+Для TestFlight и App Store нужен Apple Developer Program, тогда добавим подпись в CI.
+
 ### Подпись релиза (Release signing)
 
 1. Один раз создайте ключ загрузки: `tool/make_upload_key.sh` (нужен JDK).

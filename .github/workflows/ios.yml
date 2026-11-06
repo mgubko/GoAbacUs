@@ -1,0 +1,37 @@
+name: iOS build
+
+# macOS runners cost 10x Linux minutes on private repositories, so iOS builds
+# run only on version tags or when started by hand (Actions > iOS build >
+# Run workflow), not on every push.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+env:
+  FLUTTER_VERSION: '3.35.7'
+
+jobs:
+  ipa-unsigned:
+    name: Unsigned iPad/iPhone build (.ipa)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Build (no code signing)
+        run: flutter build ios --release --no-codesign --build-number=${{ github.run_number }}
+      - name: Package .ipa
+        run: |
+          mkdir -p dist/Payload
+          cp -R build/ios/iphoneos/Runner.app dist/Payload/
+          cd dist && zip -qry goabacus-unsigned.ipa Payload && rm -rf Payload
+      - uses: actions/upload-artifact@v4
+        with:
+          name: goabacus-ios-unsigned
+          path: dist/goabacus-unsigned.ipa
+          retention-days: 30
