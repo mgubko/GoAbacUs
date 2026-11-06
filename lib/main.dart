@@ -86,19 +86,29 @@ class _AbacusScreenState extends State<AbacusScreen> {
                 padding: const EdgeInsets.fromLTRB(20, 6, 12, 0),
                 child: Row(
                   children: [
-                    ValueListenableBuilder<int>(
-                      valueListenable: _controller.value,
-                      builder: (context, v, _) => Text(
-                        _format(v),
-                        style: const TextStyle(
-                          fontSize: 40,
-                          fontWeight: FontWeight.w700,
-                          color: ink,
-                          fontFeatures: [FontFeature.tabularFigures()],
+                    // The number shrinks to fit, so the buttons always stay
+                    // on screen (10 full rows give 11 111 111 110).
+                    Expanded(
+                      child: Align(
+                        alignment: Alignment.centerLeft,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: ValueListenableBuilder<int>(
+                            valueListenable: _controller.value,
+                            builder: (context, v, _) => Text(
+                              _format(v),
+                              maxLines: 1,
+                              style: const TextStyle(
+                                fontSize: 40,
+                                fontWeight: FontWeight.w700,
+                                color: ink,
+                                fontFeatures: [FontFeature.tabularFigures()],
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                    const Spacer(),
                     IconButton(
                       tooltip: _controller.tiltEnabled ? t.tiltOn : t.tiltOff,
                       color: ink,

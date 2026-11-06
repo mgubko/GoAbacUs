@@ -72,6 +72,9 @@ class SoundEngine {
   final _wood = <_Voices>[];
   final _rng = math.Random();
   bool enabled = true;
+
+  /// Overall loudness; the clicks should be heard, not startle.
+  double masterVolume = 0.6;
   bool _ready = false;
   bool _paused = false;
   DateTime _lastHaptic = DateTime.fromMillisecondsSinceEpoch(0);
@@ -125,7 +128,7 @@ class SoundEngine {
         1.0,
       );
       final voices = impact.kind == ImpactKind.bead ? _bone : _wood;
-      voices[_rng.nextInt(voices.length)].play(volume * volume);
+      voices[_rng.nextInt(voices.length)].play(masterVolume * volume * volume);
     }
   }
 
