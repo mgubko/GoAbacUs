@@ -215,4 +215,30 @@ void main() {
     expect(one, greaterThan(0));
     expect(five, closeTo(one * 5, one * 0.5));
   });
+
+  test('on a slow tilt beads break away one by one, the end bead first', () {
+    final p = AbacusPhysics()..setRowCount(0, 6);
+    final left = <int, double>{};
+    var t = 0.0;
+    // Slowly tilt to the right: gravity along grows 1 m/s² per second.
+    while (t < 6 && left.length < 6) {
+      p.gravityAlong = t * 1.0;
+      p.gravityNormal = 9.6;
+      p.step(1 / 240);
+      t += 1 / 240;
+      for (var i = 0; i < 6; i++) {
+        if (!left.containsKey(i) &&
+            p.x[0][i] > p.config.halfBead + i * p.config.beadLength + 0.002) {
+          left[i] = t;
+        }
+      }
+    }
+    expect(left.length, 6);
+    // Bead 5 (the free end, downhill) goes first, then 4, 3...
+    for (var i = 5; i > 0; i--) {
+      expect(left[i]!, lessThan(left[i - 1]!));
+    }
+    // ...one after another, not all at once.
+    expect(left[0]! - left[5]!, greaterThan(0.1));
+  });
 }

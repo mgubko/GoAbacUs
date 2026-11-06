@@ -67,10 +67,54 @@ class _Voices {
   }
 }
 
+/// A seamless looping sound whose loudness follows the motion of beads.
+class _Loop {
+  _Loop(this._player);
+  final AudioPlayer _player;
+  double _volume = 0;
+  DateTime _last = DateTime.fromMillisecondsSinceEpoch(0);
+
+  static Future<_Loop> load(String asset) async {
+    final p = AudioPlayer();
+    await p.setPlayerMode(PlayerMode.lowLatency);
+    await p.setReleaseMode(ReleaseMode.loop);
+    await p.setSource(AssetSource(asset));
+    await p.setVolume(0);
+    await p.resume();
+    return _Loop(p);
+  }
+
+  /// Sets the loudness, sending only noticeable changes, at most ~25 times
+  /// a second, so the platform channel is not flooded.
+  void set(double volume) {
+    final now = DateTime.now();
+    final big = (volume - _volume).abs() > 0.03;
+    final silence = volume == 0 && _volume != 0;
+    if (!silence && (!big || now.difference(_last).inMilliseconds < 40)) {
+      return;
+    }
+    _volume = volume;
+    _last = now;
+    _player.setVolume(volume).catchError((_) {});
+  }
+
+  void pause() {
+    _volume = 0;
+    _player.setVolume(0).catchError((_) {});
+    _player.pause().catchError((_) {});
+  }
+
+  void resume() => _player.resume().catchError((_) {});
+
+  Future<void> dispose() => _player.dispose();
+}
+
 /// Plays bone and wood impact sounds. Loudness follows the impact speed.
 class SoundEngine {
   final _bone = <_Voices>[];
   final _wood = <_Voices>[];
+  _Loop? _slide;
+  _Loop? _rattle;
   final _rng = math.Random();
   bool enabled = true;
 
@@ -138,6 +182,8 @@ class SoundEngine {
         _bone.add(await _Voices.load('sounds/bone_$i.wav', 3));
         _wood.add(await _Voices.load('sounds/wood_$i.wav', 2));
       }
+      _slide = await _Loop.load('sounds/slide.wav');
+      _rattle = await _Loop.load('sounds/rattle.wav');
       _ready = true;
     } catch (e) {
       debugPrint('Sound disabled: $e');
@@ -151,7 +197,21 @@ class SoundEngine {
       for (final v in [..._bone, ..._wood]) {
         v.stopAll();
       }
+      _slide?.pause();
+      _rattle?.pause();
+    } else {
+      _slide?.resume();
+      _rattle?.resume();
     }
+  }
+
+  /// Continuous sounds of motion, levels 0..1: single beads sliding on the
+  /// wire, and groups sliding together with a light rattle.
+  void motion(double slide, double rattle) {
+    if (!_ready) return;
+    final on = enabled && !_paused;
+    _slide?.set(on ? masterVolume * 0.7 * slide : 0);
+    _rattle?.set(on ? masterVolume * 0.8 * rattle : 0);
   }
 
   /// Plays the loudest impacts of one frame.
@@ -174,5 +234,7 @@ class SoundEngine {
     for (final v in [..._bone, ..._wood]) {
       await v.dispose();
     }
+    await _slide?.dispose();
+    await _rattle?.dispose();
   }
 }

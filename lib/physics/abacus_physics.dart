@@ -111,10 +111,32 @@ class AbacusPhysics {
         config.rows,
         (_) => List.filled(config.beadsPerRow, 0.0),
       ) {
+    // Every real bead is a little different: its grip on the wire and how
+    // long it resists before it breaks loose. Fixed seed: the same abacus
+    // every launch, and repeatable tests.
+    final rnd = math.Random(7);
+    for (var r = 0; r < config.rows; r++) {
+      _grip.add(
+        List.generate(
+          config.beadsPerRow,
+          (_) => 0.92 + 0.16 * rnd.nextDouble(),
+        ),
+      );
+      _breakDelay.add(
+        List.generate(
+          config.beadsPerRow,
+          (_) => 0.03 + 0.07 * rnd.nextDouble(),
+        ),
+      );
+      _strain.add(List.filled(config.beadsPerRow, 0.0));
+    }
     clear();
   }
 
   final AbacusConfig config;
+  final _grip = <List<double>>[];
+  final _breakDelay = <List<double>>[];
+  final _strain = <List<double>>[];
 
   /// Bead centre positions per row, measured from the left inner frame face.
   /// Beads in a row are always sorted left to right.
@@ -194,6 +216,19 @@ class AbacusPhysics {
         v[r][i] = math.max(v[r][i], speed * (0.8 + 0.04 * i));
       }
     }
+  }
+
+  /// Whether bead [i] of row [r], pulled in direction [dir], rests against a
+  /// resting neighbour or the frame on that side.
+  bool _supported(int r, int i, int dir) {
+    final xs = x[r];
+    final j = i + dir;
+    if (j < 0) return xs[i] - config.halfBead <= _touch;
+    if (j >= xs.length) {
+      return config.wireLength - config.halfBead - xs[i] <= _touch;
+    }
+    final gap = (xs[j] - xs[i]).abs() - config.beadLength;
+    return gap <= _touch && v[r][j].abs() <= _restSpeed;
   }
 
   /// Index of the bead under [pos] in [row], or null.
@@ -283,20 +318,38 @@ class AbacusPhysics {
         accel[i] += f / m;
       }
 
+      final strain = _strain[r];
       for (var i = 0; i < c.beadsPerRow; i++) {
         final a = accel[i];
         var s = vs[i];
         if (s.abs() <= _restSpeed) {
           // Sticking: it only starts to slide if pushed over static friction,
           // plus adhesion when it is docked and pulled away from the frame.
-          var hold = static;
+          var hold = static * _grip[r][i];
           if (!grabbed[i] && ((i < left && a > 0) || (i >= right && a < 0))) {
             hold += c.adhesion;
           }
-          if (a.abs() > hold) {
-            s = (a - a.sign * kinetic) * dt;
-          } else {
+          if (a.abs() <= hold) {
             s = 0;
+            strain[i] = 0;
+          } else if (grabbed[i]) {
+            s = (a - a.sign * kinetic) * dt;
+          } else if (_supported(r, i, a.sign.toInt())) {
+            // A resting bead propped up from below by a resting neighbour
+            // (or the frame) stays put; only the last bead of a group, with
+            // nothing below it, can break away.
+            s = 0;
+            strain[i] = 0;
+          } else {
+            // Dry friction lets go after a short, bead-specific moment, so
+            // on a slow tilt beads tear off one after another: a cascade.
+            strain[i] += dt;
+            if (strain[i] >= _breakDelay[r][i]) {
+              strain[i] = 0;
+              s = (a - a.sign * kinetic) * dt;
+            } else {
+              s = 0;
+            }
           }
         } else {
           s += a * dt;

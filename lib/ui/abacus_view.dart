@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 import 'package:flutter/scheduler.dart';
@@ -39,11 +40,45 @@ class AbacusController extends ChangeNotifier {
       _acc -= _dt;
     }
     sound.play(impacts);
+    _motionSound();
     value.value = physics.value;
     notifyListeners();
   }
 
   void clear() => physics.sweepRight();
+
+  /// Measures how beads move: lone beads sliding and groups sliding together
+  /// (beads touching each other, which rattle), and drives the loop sounds.
+  void _motionSound() {
+    final cfg = physics.config;
+    var single = 0.0;
+    var group = 0.0;
+    for (var r = 0; r < cfg.rows; r++) {
+      final xs = physics.x[r];
+      final vs = physics.v[r];
+      var i = 0;
+      while (i < xs.length) {
+        var j = i;
+        var speed = vs[i].abs();
+        while (j + 1 < xs.length &&
+            xs[j + 1] - xs[j] - cfg.beadLength <= 0.0006) {
+          j++;
+          speed += vs[j].abs();
+        }
+        final size = j - i + 1;
+        speed /= size;
+        if (speed > 0.01) {
+          if (size == 1) {
+            single += speed;
+          } else {
+            group += speed * math.sqrt(size);
+          }
+        }
+        i = j + 1;
+      }
+    }
+    sound.motion(math.min(1, single / 0.6), math.min(1, group / 1.2));
+  }
 
   @override
   void dispose() {
