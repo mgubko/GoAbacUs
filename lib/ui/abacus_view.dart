@@ -40,7 +40,7 @@ class AbacusController extends ChangeNotifier {
       _acc -= _dt;
     }
     sound.play(impacts);
-    _motionSound();
+    _motionSound(elapsed);
     value.value = physics.value;
     notifyListeners();
   }
@@ -49,21 +49,29 @@ class AbacusController extends ChangeNotifier {
 
   /// Measures how beads move: lone beads sliding and groups sliding together
   /// (beads touching each other, which rattle), and drives the loop sounds.
-  void _motionSound() {
+  List<List<double>>? _lastX;
+
+  void _motionSound(double elapsed) {
     final cfg = physics.config;
+    final prev = _lastX;
+    _lastX = [for (final row in physics.x) List.of(row)];
+    if (prev == null || elapsed <= 0) return;
+    // Speeds from real displacement, so beads pressed against a stack or
+    // the frame are silent.
+    final dt = elapsed.clamp(0.001, 0.05);
     var single = 0.0;
     var group = 0.0;
     for (var r = 0; r < cfg.rows; r++) {
       final xs = physics.x[r];
-      final vs = physics.v[r];
+      double sp(int k) => (xs[k] - prev[r][k]).abs() / dt;
       var i = 0;
       while (i < xs.length) {
         var j = i;
-        var speed = vs[i].abs();
+        var speed = sp(i);
         while (j + 1 < xs.length &&
             xs[j + 1] - xs[j] - cfg.beadLength <= 0.0006) {
           j++;
-          speed += vs[j].abs();
+          speed += sp(j);
         }
         final size = j - i + 1;
         speed /= size;

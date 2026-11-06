@@ -241,4 +241,31 @@ void main() {
     // ...one after another, not all at once.
     expect(left[0]! - left[5]!, greaterThan(0.1));
   });
+
+  test('moving a group down the slope is easier than up the slope', () {
+    // How far a slowly dragged group of 5 lags behind the finger.
+    double lag(int dir) {
+      final p = AbacusPhysics();
+      for (var k = 0; k < 5; k++) {
+        p.x[0][k] = 0.07 + k * p.config.beadLength;
+      }
+      // Board tilted ~13 degrees down to the right; free beads still hold.
+      p.gravityAlong = 2.0;
+      p.gravityNormal = 9.5;
+      // Push the group by its trailing bead.
+      final i = dir > 0 ? 0 : 4;
+      final g = Grab(0, i, 0, p.x[0][i]);
+      p.grabs[1] = g;
+      for (var k = 0; k < 120; k++) {
+        g.target += dir * 0.0004;
+        g.targetVelocity = dir * 0.1;
+        p.step(1 / 240);
+      }
+      return (g.target - p.x[0][i]) * dir;
+    }
+
+    final down = lag(1);
+    final up = lag(-1);
+    expect(up, greaterThan(down * 1.5));
+  });
 }

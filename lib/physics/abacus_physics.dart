@@ -17,9 +17,10 @@ class AbacusConfig {
     this.adhesion = 0.4,
     this.captureSpeed = 1.2,
     this.airDrag = 0.35,
-    this.grabStiffness = 45.0,
+    this.grabStiffness = 12.0,
     this.grabDampingRatio = 0.9,
-    this.grabMaxForce = 0.55,
+    this.grabMaxForce = 0.25,
+    this.grabFlickForce = 0.6,
   });
 
   final int rows;
@@ -62,6 +63,11 @@ class AbacusConfig {
   final double grabStiffness;
   final double grabDampingRatio;
   final double grabMaxForce;
+
+  /// Extra finger force for a fast swipe (reached at 0.5 m/s): a slow drag
+  /// is gentle, so tilt clearly matters (down the slope is easier, up the
+  /// slope a group lags); a sharp flick moves even a heavy group uphill.
+  final double grabFlickForce;
 
   double get halfBead => beadLength / 2;
 }
@@ -314,7 +320,10 @@ class AbacusPhysics {
         var f =
             c.grabStiffness * (g.target + g.offset - xs[i]) +
             damping * (g.targetVelocity - vs[i]);
-        f = f.clamp(-c.grabMaxForce, c.grabMaxForce);
+        final cap =
+            c.grabMaxForce +
+            c.grabFlickForce * math.min(1.0, g.targetVelocity.abs() / 0.5);
+        f = f.clamp(-cap, cap);
         accel[i] += f / m;
       }
 
@@ -493,5 +502,23 @@ class AbacusPhysics {
     // Final hard clamp so beads never leave the wire.
     if (xs[0] < lo) xs[0] = lo;
     if (xs[n - 1] > hi) xs[n - 1] = hi;
+    // A bead pressed into a chain that ends at the frame cannot move into
+    // it: drop the leftover velocity, so a stack pushed against the frame
+    // really is at rest (no phantom motion, sliding sound or broken docking).
+    // Only real contact counts (the solver leaves touching beads exactly
+    // adjacent); a bead merely close by keeps flying and still hits.
+    const eps = 1e-7;
+    if (xs[0] - lo <= eps && vs[0] < 0) vs[0] = 0;
+    for (var i = 1; i < n; i++) {
+      if (xs[i] - xs[i - 1] - c.beadLength <= eps && vs[i] < vs[i - 1]) {
+        vs[i] = vs[i - 1];
+      }
+    }
+    if (hi - xs[n - 1] <= eps && vs[n - 1] > 0) vs[n - 1] = 0;
+    for (var i = n - 2; i >= 0; i--) {
+      if (xs[i + 1] - xs[i] - c.beadLength <= eps && vs[i] > vs[i + 1]) {
+        vs[i] = vs[i + 1];
+      }
+    }
   }
 }
