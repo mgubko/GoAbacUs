@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'arith/exercise.dart';
 import 'arith/plan.dart';
 import 'l10n/app_localizations.dart';
 import 'ui/abacus_view.dart';
 import 'ui/example_panel.dart';
+import 'ui/exercise_ui.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -58,7 +60,17 @@ class _AbacusScreenState extends State<AbacusScreen> {
     super.dispose();
   }
 
+  var _exerciseSettings = const ExerciseSettings();
+
+  Future<void> _startExercises() async {
+    final s = await showExerciseSetup(context, _exerciseSettings);
+    if (s == null) return;
+    _exerciseSettings = s;
+    _controller.startExercises(s);
+  }
+
   Future<void> _enterExample() async {
+    _controller.stopExercises();
     final rows = _controller.physics.config.rows;
     var max = 1;
     for (var i = 0; i < rows; i++) {
@@ -112,6 +124,13 @@ class _AbacusScreenState extends State<AbacusScreen> {
                       ),
                     ),
                     IconButton(
+                      tooltip: t.exercisesTooltip,
+                      color: ink,
+                      iconSize: 30,
+                      icon: const Icon(Icons.school_outlined),
+                      onPressed: _startExercises,
+                    ),
+                    IconButton(
                       tooltip: t.playTooltip,
                       color: ink,
                       iconSize: 30,
@@ -158,8 +177,22 @@ class _AbacusScreenState extends State<AbacusScreen> {
                   ],
                 ),
               ),
-              ExamplePanel(controller: _controller),
-              Expanded(child: AbacusView(controller: _controller)),
+              ValueListenableBuilder<int>(
+                valueListenable: _controller.changes,
+                builder: (context, _, _) =>
+                    _controller.exercise != null && _controller.player == null
+                    ? ExercisePanel(controller: _controller)
+                    : ExamplePanel(controller: _controller),
+              ),
+              Expanded(
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    AbacusView(controller: _controller),
+                    ExerciseResult(controller: _controller),
+                  ],
+                ),
+              ),
             ],
           ),
         ),

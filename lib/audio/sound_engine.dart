@@ -115,6 +115,8 @@ class SoundEngine {
   final _wood = <_Voices>[];
   _Loop? _slide;
   _Loop? _rattle;
+  _Voices? _success;
+  _Voices? _fail;
   final _rng = math.Random();
   bool enabled = true;
 
@@ -182,6 +184,8 @@ class SoundEngine {
         _bone.add(await _Voices.load('sounds/bone_$i.wav', 3));
         _wood.add(await _Voices.load('sounds/wood_$i.wav', 2));
       }
+      _success = await _Voices.load('sounds/success.wav', 1);
+      _fail = await _Voices.load('sounds/fail.wav', 1);
       _slide = await _Loop.load('sounds/slide.wav');
       _rattle = await _Loop.load('sounds/rattle.wav');
       _ready = true;
@@ -214,6 +218,13 @@ class SoundEngine {
     _rattle?.set(on ? masterVolume * 0.8 * rattle : 0);
   }
 
+  /// Reward for a right answer, or a gentle "oh no" for a wrong one.
+  void cue({required bool success}) {
+    if (!success && vibrationEnabled) HapticFeedback.mediumImpact();
+    if (!enabled || !_ready || _paused) return;
+    (success ? _success : _fail)?.play(masterVolume * 0.9);
+  }
+
   /// Plays the loudest impacts of one frame.
   void play(List<Impact> impacts) {
     if (impacts.isEmpty || _paused) return;
@@ -231,7 +242,7 @@ class SoundEngine {
   }
 
   Future<void> dispose() async {
-    for (final v in [..._bone, ..._wood]) {
+    for (final v in [..._bone, ..._wood, ?_success, ?_fail]) {
       await v.dispose();
     }
     await _slide?.dispose();

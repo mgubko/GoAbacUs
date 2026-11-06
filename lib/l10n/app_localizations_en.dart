@@ -110,4 +110,70 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get place9 => 'Billions';
+
+  @override
+  String get exercisesTooltip => 'Exercises';
+
+  @override
+  String get opsAdd => 'Addition';
+
+  @override
+  String get opsSub => 'Subtraction';
+
+  @override
+  String get opsBoth => 'Both';
+
+  @override
+  String get levelEasy => 'Easy';
+
+  @override
+  String get levelHard => 'With carrying';
+
+  @override
+  String get levelEasyHint => 'Numbers up to 99, no carrying';
+
+  @override
+  String get levelHardHint => 'Numbers up to 999, carrying and borrowing';
+
+  @override
+  String get startButton => 'Start';
+
+  @override
+  String taskNumber(int n) {
+    return 'Task $n';
+  }
+
+  @override
+  String get doneButton => 'Done';
+
+  @override
+  String get nextButton => 'Next';
+
+  @override
+  String get exitTooltip => 'Finish exercises';
+
+  @override
+  String get rightTitle => 'Well done!';
+
+  @override
+  String get wrongTitle => 'Not quite';
+
+  @override
+  String get timeUpTitle => 'Time is up';
+
+  @override
+  String answerIs(String answer) {
+    return 'The answer is $answer';
+  }
+
+  @override
+  String get showSolution => 'Show the solution';
+
+  @override
+  String streakText(int n) {
+    return '$n in a row!';
+  }
+
+  @override
+  String get solveHint => 'Work it out on the abacus';
 }

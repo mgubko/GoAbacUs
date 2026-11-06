@@ -110,4 +110,70 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get place9 => 'Millares de millón';
+
+  @override
+  String get exercisesTooltip => 'Ejercicios';
+
+  @override
+  String get opsAdd => 'Suma';
+
+  @override
+  String get opsSub => 'Resta';
+
+  @override
+  String get opsBoth => 'Las dos';
+
+  @override
+  String get levelEasy => 'Fáciles';
+
+  @override
+  String get levelHard => 'Con llevadas';
+
+  @override
+  String get levelEasyHint => 'Números hasta 99, sin llevar';
+
+  @override
+  String get levelHardHint => 'Números hasta 999, llevando y pidiendo prestado';
+
+  @override
+  String get startButton => 'Empezar';
+
+  @override
+  String taskNumber(int n) {
+    return 'Ejercicio $n';
+  }
+
+  @override
+  String get doneButton => 'Listo';
+
+  @override
+  String get nextButton => 'Siguiente';
+
+  @override
+  String get exitTooltip => 'Terminar los ejercicios';
+
+  @override
+  String get rightTitle => '¡Muy bien!';
+
+  @override
+  String get wrongTitle => 'No exactamente';
+
+  @override
+  String get timeUpTitle => 'Se acabó el tiempo';
+
+  @override
+  String answerIs(String answer) {
+    return 'La respuesta es $answer';
+  }
+
+  @override
+  String get showSolution => 'Ver la solución';
+
+  @override
+  String streakText(int n) {
+    return '¡$n seguidos!';
+  }
+
+  @override
+  String get solveHint => 'Resuélvelo en el ábaco';
 }

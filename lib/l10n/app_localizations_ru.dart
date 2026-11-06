@@ -110,4 +110,70 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get place9 => 'Миллиарды';
+
+  @override
+  String get exercisesTooltip => 'Задания';
+
+  @override
+  String get opsAdd => 'Сложение';
+
+  @override
+  String get opsSub => 'Вычитание';
+
+  @override
+  String get opsBoth => 'Всё вместе';
+
+  @override
+  String get levelEasy => 'Простые';
+
+  @override
+  String get levelHard => 'С переносом';
+
+  @override
+  String get levelEasyHint => 'Числа до 99, без переноса через разряд';
+
+  @override
+  String get levelHardHint => 'Числа до 999, с переносом и займом';
+
+  @override
+  String get startButton => 'Начать';
+
+  @override
+  String taskNumber(int n) {
+    return 'Задание $n';
+  }
+
+  @override
+  String get doneButton => 'Готово';
+
+  @override
+  String get nextButton => 'Дальше';
+
+  @override
+  String get exitTooltip => 'Закончить задания';
+
+  @override
+  String get rightTitle => 'Молодец!';
+
+  @override
+  String get wrongTitle => 'Не совсем так';
+
+  @override
+  String get timeUpTitle => 'Время вышло';
+
+  @override
+  String answerIs(String answer) {
+    return 'Правильный ответ: $answer';
+  }
+
+  @override
+  String get showSolution => 'Показать решение';
+
+  @override
+  String streakText(int n) {
+    return '$n подряд!';
+  }
+
+  @override
+  String get solveHint => 'Посчитай на счётах';
 }

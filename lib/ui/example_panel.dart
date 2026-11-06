@@ -40,7 +40,13 @@ class ExamplePanel extends StatelessWidget {
         if (player != null) {
           line = _exampleLine(player.example, player.term, player.done);
           final step = player.step;
-          if (player.done) {
+          if (player.done && controller.exercise != null) {
+            button = _button(
+              Icons.arrow_forward_rounded,
+              t.nextButton,
+              controller.nextExercise,
+            );
+          } else if (player.done) {
             button = _button(
               Icons.replay,
               t.replayTooltip,

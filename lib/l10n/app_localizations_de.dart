@@ -110,4 +110,70 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get place9 => 'Milliarden';
+
+  @override
+  String get exercisesTooltip => 'Aufgaben';
+
+  @override
+  String get opsAdd => 'Addition';
+
+  @override
+  String get opsSub => 'Subtraktion';
+
+  @override
+  String get opsBoth => 'Beides';
+
+  @override
+  String get levelEasy => 'Leicht';
+
+  @override
+  String get levelHard => 'Mit Übertrag';
+
+  @override
+  String get levelEasyHint => 'Zahlen bis 99, ohne Übertrag';
+
+  @override
+  String get levelHardHint => 'Zahlen bis 999, mit Übertrag und Entbündeln';
+
+  @override
+  String get startButton => 'Los';
+
+  @override
+  String taskNumber(int n) {
+    return 'Aufgabe $n';
+  }
+
+  @override
+  String get doneButton => 'Fertig';
+
+  @override
+  String get nextButton => 'Weiter';
+
+  @override
+  String get exitTooltip => 'Aufgaben beenden';
+
+  @override
+  String get rightTitle => 'Super gemacht!';
+
+  @override
+  String get wrongTitle => 'Nicht ganz';
+
+  @override
+  String get timeUpTitle => 'Die Zeit ist um';
+
+  @override
+  String answerIs(String answer) {
+    return 'Die Antwort ist $answer';
+  }
+
+  @override
+  String get showSolution => 'Lösung zeigen';
+
+  @override
+  String streakText(int n) {
+    return '$n hintereinander!';
+  }
+
+  @override
+  String get solveHint => 'Rechne es auf dem Abakus aus';
 }

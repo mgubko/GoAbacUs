@@ -289,6 +289,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Billions'**
   String get place9;
+
+  /// No description provided for @exercisesTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Exercises'**
+  String get exercisesTooltip;
+
+  /// No description provided for @opsAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Addition'**
+  String get opsAdd;
+
+  /// No description provided for @opsSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Subtraction'**
+  String get opsSub;
+
+  /// No description provided for @opsBoth.
+  ///
+  /// In en, this message translates to:
+  /// **'Both'**
+  String get opsBoth;
+
+  /// No description provided for @levelEasy.
+  ///
+  /// In en, this message translates to:
+  /// **'Easy'**
+  String get levelEasy;
+
+  /// No description provided for @levelHard.
+  ///
+  /// In en, this message translates to:
+  /// **'With carrying'**
+  String get levelHard;
+
+  /// No description provided for @levelEasyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers up to 99, no carrying'**
+  String get levelEasyHint;
+
+  /// No description provided for @levelHardHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Numbers up to 999, carrying and borrowing'**
+  String get levelHardHint;
+
+  /// No description provided for @startButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get startButton;
+
+  /// No description provided for @taskNumber.
+  ///
+  /// In en, this message translates to:
+  /// **'Task {n}'**
+  String taskNumber(int n);
+
+  /// No description provided for @doneButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Done'**
+  String get doneButton;
+
+  /// No description provided for @nextButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get nextButton;
+
+  /// No description provided for @exitTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish exercises'**
+  String get exitTooltip;
+
+  /// No description provided for @rightTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Well done!'**
+  String get rightTitle;
+
+  /// No description provided for @wrongTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Not quite'**
+  String get wrongTitle;
+
+  /// No description provided for @timeUpTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Time is up'**
+  String get timeUpTitle;
+
+  /// No description provided for @answerIs.
+  ///
+  /// In en, this message translates to:
+  /// **'The answer is {answer}'**
+  String answerIs(String answer);
+
+  /// No description provided for @showSolution.
+  ///
+  /// In en, this message translates to:
+  /// **'Show the solution'**
+  String get showSolution;
+
+  /// No description provided for @streakText.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} in a row!'**
+  String streakText(int n);
+
+  /// No description provided for @solveHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Work it out on the abacus'**
+  String get solveHint;
 }
 
 class _AppLocalizationsDelegate

@@ -65,5 +65,46 @@
         "type": "int"
       }
     }
+  },
+  "exercisesTooltip": "Exercises",
+  "opsAdd": "Addition",
+  "opsSub": "Subtraction",
+  "opsBoth": "Both",
+  "levelEasy": "Easy",
+  "levelHard": "With carrying",
+  "levelEasyHint": "Numbers up to 99, no carrying",
+  "levelHardHint": "Numbers up to 999, carrying and borrowing",
+  "startButton": "Start",
+  "taskNumber": "Task {n}",
+  "doneButton": "Done",
+  "nextButton": "Next",
+  "exitTooltip": "Finish exercises",
+  "rightTitle": "Well done!",
+  "wrongTitle": "Not quite",
+  "timeUpTitle": "Time is up",
+  "answerIs": "The answer is {answer}",
+  "showSolution": "Show the solution",
+  "streakText": "{n} in a row!",
+  "solveHint": "Work it out on the abacus",
+  "@taskNumber": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "@streakText": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      }
+    }
+  },
+  "@answerIs": {
+    "placeholders": {
+      "answer": {
+        "type": "String"
+      }
+    }
   }
 }

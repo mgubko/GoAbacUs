@@ -5,6 +5,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../arith/exercise.dart';
 import '../arith/plan.dart';
 import '../arith/player.dart';
 import '../arith/tape.dart';
@@ -35,6 +36,51 @@ class AbacusController extends ChangeNotifier {
   final changes = ValueNotifier<int>(0);
 
   bool get playing => player != null && !player!.done;
+
+  /// Tasks to solve, when the exercise mode is on.
+  ExerciseSession? exercise;
+  int _shownSeconds = -1;
+
+  void startExercises(ExerciseSettings settings) {
+    player?.cancel();
+    player = null;
+    physics.sweepRight();
+    exercise = ExerciseSession(settings);
+    changes.value++;
+  }
+
+  /// Next task on an empty abacus.
+  void nextExercise() {
+    final e = exercise;
+    if (e == null) return;
+    player?.cancel();
+    player = null;
+    physics.sweepRight();
+    e.next();
+    changes.value++;
+  }
+
+  void submitExercise() {
+    final e = exercise;
+    if (e == null || e.state != TaskState.solving) return;
+    e.submit(physics.value);
+    sound.cue(success: e.state == TaskState.right);
+    changes.value++;
+  }
+
+  void showSolution() {
+    final e = exercise;
+    if (e != null) play(e.task);
+  }
+
+  void stopExercises() {
+    if (exercise == null) return;
+    exercise = null;
+    player?.cancel();
+    player = null;
+    tape.reset(physics.value);
+    changes.value++;
+  }
 
   static const double _dt = 1 / 240;
   double _acc = 0;
@@ -92,17 +138,52 @@ class AbacusController extends ChangeNotifier {
     sound.play(impacts);
     _motionSound(elapsed);
     value.value = physics.value;
+    final ex = exercise;
     if (p != null) {
-      if (p.done && !before!.$3) tape.setExample(p.example);
+      if (p.done && !before!.$3 && ex == null) tape.setExample(p.example);
       if ((p.term, p.step, p.done) != before) changes.value++;
+      if (p.done &&
+          before!.$3 &&
+          ex == null &&
+          p.example.result != 0 &&
+          value.value == 0 &&
+          physics.isAtRest) {
+        // The beads were swept back (by tilting): start afresh.
+        player = null;
+        tape.reset();
+        changes.value++;
+      }
+    } else if (ex != null) {
+      final dt = Duration(
+        microseconds: (elapsed.clamp(0.0, 0.1) * 1e6).round(),
+      );
+      if (ex.tick(dt, value.value, physics.isAtRest)) {
+        sound.cue(success: ex.state == TaskState.right);
+        changes.value++;
+      }
+      final seconds = ex.left.inSeconds;
+      if (seconds != _shownSeconds) {
+        _shownSeconds = seconds;
+        changes.value++;
+      }
+    } else if (value.value == 0 && tape.terms.isNotEmpty && physics.isAtRest) {
+      // All beads pushed back to the right: a fresh start, as with the
+      // clear button.
+      tape.reset();
+      changes.value++;
     } else if (tape.update(value.value, physics.isAtRest, _clock)) {
       changes.value++;
     }
     notifyListeners();
   }
 
-  /// Sweeps the beads away and starts a new record.
+  /// Sweeps the beads away and starts a new record. During exercises only
+  /// the beads are swept: the task stays.
   void clear() {
+    if (exercise != null) {
+      if (!playing) physics.sweepRight();
+      return;
+    }
     player?.cancel();
     player = null;
     physics.sweepRight();

@@ -110,4 +110,70 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get place9 => 'Milliards';
+
+  @override
+  String get exercisesTooltip => 'Exercices';
+
+  @override
+  String get opsAdd => 'Addition';
+
+  @override
+  String get opsSub => 'Soustraction';
+
+  @override
+  String get opsBoth => 'Les deux';
+
+  @override
+  String get levelEasy => 'Faciles';
+
+  @override
+  String get levelHard => 'Avec retenue';
+
+  @override
+  String get levelEasyHint => 'Nombres jusqu’à 99, sans retenue';
+
+  @override
+  String get levelHardHint => 'Nombres jusqu’à 999, avec retenues';
+
+  @override
+  String get startButton => 'Commencer';
+
+  @override
+  String taskNumber(int n) {
+    return 'Exercice $n';
+  }
+
+  @override
+  String get doneButton => 'Terminé';
+
+  @override
+  String get nextButton => 'Suivant';
+
+  @override
+  String get exitTooltip => 'Arrêter les exercices';
+
+  @override
+  String get rightTitle => 'Bravo !';
+
+  @override
+  String get wrongTitle => 'Pas tout à fait';
+
+  @override
+  String get timeUpTitle => 'Le temps est écoulé';
+
+  @override
+  String answerIs(String answer) {
+    return 'La réponse est $answer';
+  }
+
+  @override
+  String get showSolution => 'Voir la solution';
+
+  @override
+  String streakText(int n) {
+    return '$n d’affilée !';
+  }
+
+  @override
+  String get solveHint => 'Calcule-le sur le boulier';
 }
