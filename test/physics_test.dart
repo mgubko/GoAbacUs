@@ -41,7 +41,7 @@ void main() {
     p.gravityAlong = -0.5; // ~3 degrees towards the left
     run(p, 1);
     expect(p.value, 0);
-    p.gravityAlong = -5.0; // ~30 degrees: beats friction and docking
+    p.gravityAlong = -6.0; // ~37 degrees: beats friction and docking
     run(p, 2);
     expect(p.countedBeads(0), 10);
     expect(p.x[0][0], closeTo(p.config.halfBead, 1e-4));
@@ -131,9 +131,9 @@ void main() {
 
   test('docked beads hold against a moderate tilt', () {
     final p = AbacusPhysics()..setRowCount(0, 3);
-    // ~14 degrees: enough to slide a free bead, not enough to undock.
-    p.gravityAlong = 2.4;
-    p.gravityNormal = 9.4;
+    // ~21 degrees: enough to slide a free bead, not enough to undock.
+    p.gravityAlong = 3.45;
+    p.gravityNormal = 9.2;
     run(p, 1);
     expect(p.leftStack(0), 3);
   });
@@ -141,16 +141,16 @@ void main() {
   test('a free bead slides at the tilt where a docked stack still holds', () {
     final p = AbacusPhysics();
     p.x[0][0] = 0.1;
-    p.gravityAlong = -2.4;
-    p.gravityNormal = 9.5;
+    p.gravityAlong = -3.45;
+    p.gravityNormal = 9.2;
     run(p, 1);
     expect(p.x[0][0], closeTo(p.config.halfBead, 1e-4));
   });
 
   test('tilting back the other way releases a full left stack', () {
     final p = AbacusPhysics()..setRowCount(0, 10);
-    p.gravityAlong = 3.0; // ~18 degrees to the right
-    p.gravityNormal = 9.3;
+    p.gravityAlong = 5.0; // ~30 degrees to the right
+    p.gravityNormal = 8.5;
     run(p, 2);
     expect(p.countedBeads(0), 0);
   });
@@ -239,7 +239,7 @@ void main() {
       expect(left[i]!, lessThan(left[i - 1]!));
     }
     // ...one after another, not all at once.
-    expect(left[0]! - left[5]!, greaterThan(0.1));
+    expect(left[0]! - left[5]!, greaterThan(0.06));
   });
 
   test('moving a group down the slope is easier than up the slope', () {

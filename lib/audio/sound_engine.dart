@@ -133,8 +133,8 @@ class SoundEngine {
 
   /// Impulse (kg·m/s) that gives the strongest buzz: a full row of ten
   /// beads hitting the frame at 0.25 m/s, or one bead flicked at 2.5 m/s.
-  static const double _fullImpulse = 0.02;
-  static const double _minImpulse = 0.001;
+  static const double _fullImpulse = 0.0125;
+  static const double _minImpulse = 0.0006;
 
   /// Buzz on frame hits, stronger and longer for a bigger impulse.
   void _vibrate(List<Impact> impacts) {

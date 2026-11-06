@@ -8,19 +8,18 @@ class AbacusConfig {
     this.beadsPerRow = 10,
     this.wireLength = 0.29,
     this.beadLength = 0.018,
-    this.beadMass = 0.008,
+    this.beadMass = 0.005,
     this.beadRestitution = 0.2,
     this.wallRestitution = 0.25,
-    this.staticFriction = 0.17,
-    this.kineticFriction = 0.12,
+    this.staticFriction = 0.28,
+    this.kineticFriction = 0.15,
     this.tiltDeadZone = 0.6,
-    this.adhesion = 0.4,
+    this.adhesion = 0.6,
     this.captureSpeed = 1.2,
     this.airDrag = 0.35,
-    this.grabStiffness = 12.0,
+    this.grabStiffness = 25.0,
     this.grabDampingRatio = 0.9,
-    this.grabMaxForce = 0.25,
-    this.grabFlickForce = 0.6,
+    this.grabMaxForce = 5.0,
   });
 
   final int rows;
@@ -63,11 +62,6 @@ class AbacusConfig {
   final double grabStiffness;
   final double grabDampingRatio;
   final double grabMaxForce;
-
-  /// Extra finger force for a fast swipe (reached at 0.5 m/s): a slow drag
-  /// is gentle, so tilt clearly matters (down the slope is easier, up the
-  /// slope a group lags); a sharp flick moves even a heavy group uphill.
-  final double grabFlickForce;
 
   double get halfBead => beadLength / 2;
 }
@@ -131,7 +125,7 @@ class AbacusPhysics {
       _breakDelay.add(
         List.generate(
           config.beadsPerRow,
-          (_) => 0.03 + 0.07 * rnd.nextDouble(),
+          (_) => 0.015 + 0.035 * rnd.nextDouble(),
         ),
       );
       _strain.add(List.filled(config.beadsPerRow, 0.0));
@@ -320,10 +314,9 @@ class AbacusPhysics {
         var f =
             c.grabStiffness * (g.target + g.offset - xs[i]) +
             damping * (g.targetVelocity - vs[i]);
-        final cap =
-            c.grabMaxForce +
-            c.grabFlickForce * math.min(1.0, g.targetVelocity.abs() / 0.5);
-        f = f.clamp(-cap, cap);
+        // No artificial limit on the finger: only a safety bound far above
+        // anything a hand produces, against numerical blow-ups.
+        f = f.clamp(-c.grabMaxForce, c.grabMaxForce);
         accel[i] += f / m;
       }
 
