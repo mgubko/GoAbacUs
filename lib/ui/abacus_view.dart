@@ -5,6 +5,9 @@ import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+import '../arith/plan.dart';
+import '../arith/player.dart';
+import '../arith/tape.dart';
 import '../audio/sound_engine.dart';
 import '../physics/abacus_physics.dart';
 import '../sensors/tilt.dart';
@@ -22,11 +25,57 @@ class AbacusController extends ChangeNotifier {
   final value = ValueNotifier<int>(0);
   bool tiltEnabled = true;
 
+  /// Writes down what the child does.
+  final tape = Tape();
+
+  /// The example being shown, kept after it ends to show the answer.
+  ExamplePlayer? player;
+
+  /// Bumped whenever the tape or the shown step changes (not every frame).
+  final changes = ValueNotifier<int>(0);
+
+  bool get playing => player != null && !player!.done;
+
   static const double _dt = 1 / 240;
   double _acc = 0;
+  Duration _clock = Duration.zero;
+
+  /// Shows [example] on the abacus, starting from an empty one.
+  void play(Example example) {
+    player?.cancel();
+    physics.grabs.clear();
+    player = ExamplePlayer(physics, example);
+    changes.value++;
+  }
+
+  /// Stops the show; recording goes on from what the abacus shows now.
+  void stop() {
+    if (player == null) return;
+    player!.cancel();
+    player = null;
+    tape.reset(physics.value);
+    changes.value++;
+  }
+
+  AbacusOverlay? overlay() {
+    final p = player;
+    if (p == null || p.done) return null;
+    return AbacusOverlay(
+      row: p.row,
+      fingerRow: p.fingerRow,
+      fingerX: p.fingerX,
+    );
+  }
 
   void tick(double elapsed) {
-    if (tiltEnabled && tilt.available) {
+    _clock += Duration(microseconds: (elapsed * 1e6).round());
+    final p = player;
+    final before = p == null ? null : (p.term, p.step, p.done);
+    if (playing) {
+      // The board lies still while an example is shown.
+      physics.gravityAlong = 0;
+      physics.gravityNormal = 9.81;
+    } else if (tiltEnabled && tilt.available) {
       physics.gravityAlong = tilt.along;
       physics.gravityNormal = tilt.normal;
     } else {
@@ -36,16 +85,37 @@ class AbacusController extends ChangeNotifier {
     _acc += elapsed.clamp(0.0, 0.05);
     final impacts = <Impact>[];
     while (_acc >= _dt) {
+      if (p != null && !p.done) p.update(_dt);
       impacts.addAll(physics.step(_dt));
       _acc -= _dt;
     }
     sound.play(impacts);
     _motionSound(elapsed);
     value.value = physics.value;
+    if (p != null) {
+      if (p.done && !before!.$3) tape.setExample(p.example);
+      if ((p.term, p.step, p.done) != before) changes.value++;
+    } else if (tape.update(value.value, physics.isAtRest, _clock)) {
+      changes.value++;
+    }
     notifyListeners();
   }
 
-  void clear() => physics.sweepRight();
+  /// Sweeps the beads away and starts a new record.
+  void clear() {
+    player?.cancel();
+    player = null;
+    physics.sweepRight();
+    tape.reset();
+    changes.value++;
+  }
+
+  /// The child touches the abacus after an example: back to free counting.
+  void takeOver() {
+    if (player == null || playing) return;
+    player = null;
+    changes.value++;
+  }
 
   /// Measures how beads move: lone beads sliding and groups sliding together
   /// (beads touching each other, which rattle), and drives the loop sounds.
@@ -93,6 +163,7 @@ class AbacusController extends ChangeNotifier {
     tilt.dispose();
     sound.dispose();
     value.dispose();
+    changes.dispose();
     super.dispose();
   }
 }
@@ -167,7 +238,7 @@ class _AbacusViewState extends State<AbacusView>
       if (_ticker.isActive) _ticker.stop();
       _pending.clear();
       _lastMove.clear();
-      c.physics.grabs.clear();
+      c.physics.grabs.removeWhere((k, _) => k >= 0);
       c.sound.setPaused(true);
       c.tilt.pause();
     }
@@ -183,7 +254,8 @@ class _AbacusViewState extends State<AbacusView>
   AbacusLayout get _layout => _art!.layout;
 
   void _down(PointerDownEvent e) {
-    if (_art == null) return;
+    if (_art == null || c.playing) return;
+    c.takeOver();
     final row = _layout.rowAt(e.localPosition.dy);
     if (row == null) return;
     final pos = _layout.toMetres(e.localPosition.dx);
@@ -236,7 +308,7 @@ class _AbacusViewState extends State<AbacusView>
   void _up(PointerEvent e) {
     _pending.remove(e.pointer);
     _lastMove.remove(e.pointer);
-    c.physics.grabs.remove(e.pointer);
+    if (e.pointer >= 0) c.physics.grabs.remove(e.pointer);
   }
 
   @override
@@ -263,7 +335,12 @@ class _AbacusViewState extends State<AbacusView>
           behavior: HitTestBehavior.opaque,
           child: CustomPaint(
             size: size,
-            painter: AbacusPainter(physics: c.physics, art: _art!, repaint: c),
+            painter: AbacusPainter(
+              physics: c.physics,
+              art: _art!,
+              repaint: c,
+              overlay: c.overlay,
+            ),
           ),
         );
       },

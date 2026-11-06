@@ -5,5 +5,65 @@
   "tiltOn": "Tilt: on",
   "tiltOff": "Tilt: off",
   "soundOn": "Sound: on",
-  "soundOff": "Sound: off"
+  "soundOff": "Sound: off",
+  "playTooltip": "Show an example",
+  "stopTooltip": "Stop",
+  "replayTooltip": "Show again",
+  "tapeHint": "Move the beads: I will write down what you do",
+  "enterExample": "Type an example",
+  "showButton": "Show",
+  "errorUnfinished": "Finish the example with a number",
+  "errorNegative": "The answer must not drop below zero",
+  "errorTooBig": "This number does not fit on the abacus",
+  "clearing": "Clearing the abacus",
+  "stepSet": "Set {number}",
+  "stepAdd": "Add {number}",
+  "stepSub": "Take away {number}",
+  "carryHint": "No room: one bead in the next row, {count} back here",
+  "borrowHint": "Not enough: one bead off the next row, {count} added here",
+  "place0": "Ones",
+  "place1": "Tens",
+  "place2": "Hundreds",
+  "place3": "Thousands",
+  "place4": "Ten thousands",
+  "place5": "Hundred thousands",
+  "place6": "Millions",
+  "place7": "Ten millions",
+  "place8": "Hundred millions",
+  "place9": "Billions",
+  "@stepSet": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "@stepAdd": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "@stepSub": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "@carryHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@borrowHint": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

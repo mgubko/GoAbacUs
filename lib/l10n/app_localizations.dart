@@ -139,6 +139,156 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sound: off'**
   String get soundOff;
+
+  /// No description provided for @playTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show an example'**
+  String get playTooltip;
+
+  /// No description provided for @stopTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get stopTooltip;
+
+  /// No description provided for @replayTooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Show again'**
+  String get replayTooltip;
+
+  /// No description provided for @tapeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Move the beads: I will write down what you do'**
+  String get tapeHint;
+
+  /// No description provided for @enterExample.
+  ///
+  /// In en, this message translates to:
+  /// **'Type an example'**
+  String get enterExample;
+
+  /// No description provided for @showButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Show'**
+  String get showButton;
+
+  /// No description provided for @errorUnfinished.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish the example with a number'**
+  String get errorUnfinished;
+
+  /// No description provided for @errorNegative.
+  ///
+  /// In en, this message translates to:
+  /// **'The answer must not drop below zero'**
+  String get errorNegative;
+
+  /// No description provided for @errorTooBig.
+  ///
+  /// In en, this message translates to:
+  /// **'This number does not fit on the abacus'**
+  String get errorTooBig;
+
+  /// No description provided for @clearing.
+  ///
+  /// In en, this message translates to:
+  /// **'Clearing the abacus'**
+  String get clearing;
+
+  /// No description provided for @stepSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Set {number}'**
+  String stepSet(String number);
+
+  /// No description provided for @stepAdd.
+  ///
+  /// In en, this message translates to:
+  /// **'Add {number}'**
+  String stepAdd(String number);
+
+  /// No description provided for @stepSub.
+  ///
+  /// In en, this message translates to:
+  /// **'Take away {number}'**
+  String stepSub(String number);
+
+  /// No description provided for @carryHint.
+  ///
+  /// In en, this message translates to:
+  /// **'No room: one bead in the next row, {count} back here'**
+  String carryHint(int count);
+
+  /// No description provided for @borrowHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough: one bead off the next row, {count} added here'**
+  String borrowHint(int count);
+
+  /// No description provided for @place0.
+  ///
+  /// In en, this message translates to:
+  /// **'Ones'**
+  String get place0;
+
+  /// No description provided for @place1.
+  ///
+  /// In en, this message translates to:
+  /// **'Tens'**
+  String get place1;
+
+  /// No description provided for @place2.
+  ///
+  /// In en, this message translates to:
+  /// **'Hundreds'**
+  String get place2;
+
+  /// No description provided for @place3.
+  ///
+  /// In en, this message translates to:
+  /// **'Thousands'**
+  String get place3;
+
+  /// No description provided for @place4.
+  ///
+  /// In en, this message translates to:
+  /// **'Ten thousands'**
+  String get place4;
+
+  /// No description provided for @place5.
+  ///
+  /// In en, this message translates to:
+  /// **'Hundred thousands'**
+  String get place5;
+
+  /// No description provided for @place6.
+  ///
+  /// In en, this message translates to:
+  /// **'Millions'**
+  String get place6;
+
+  /// No description provided for @place7.
+  ///
+  /// In en, this message translates to:
+  /// **'Ten millions'**
+  String get place7;
+
+  /// No description provided for @place8.
+  ///
+  /// In en, this message translates to:
+  /// **'Hundred millions'**
+  String get place8;
+
+  /// No description provided for @place9.
+  ///
+  /// In en, this message translates to:
+  /// **'Billions'**
+  String get place9;
 }
 
 class _AppLocalizationsDelegate

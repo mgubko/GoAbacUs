@@ -368,21 +368,58 @@ class AbacusArt {
   }
 }
 
+/// What an example being played adds to the picture: the row being worked
+/// and the invisible finger.
+class AbacusOverlay {
+  const AbacusOverlay({this.row, this.fingerRow, this.fingerX});
+  final int? row;
+  final int? fingerRow;
+  final double? fingerX;
+}
+
 class AbacusPainter extends CustomPainter {
   AbacusPainter({
     required this.physics,
     required this.art,
     required Listenable repaint,
+    this.overlay,
   }) : super(repaint: repaint);
 
   final AbacusPhysics physics;
   final AbacusArt art;
+  final AbacusOverlay? Function()? overlay;
+
+  static const _accent = Color(0xFFB5452B);
 
   @override
   void paint(Canvas canvas, Size size) {
     final l = art.layout;
     canvas.drawPicture(art.background);
     final cfg = physics.config;
+    final o = overlay?.call();
+    if (o?.row != null) {
+      // A warm glow along the wire being worked.
+      final y = l.wireY(o!.row!);
+      final band = Rect.fromLTRB(
+        l.inner.left,
+        y - l.spacing / 2,
+        l.inner.right,
+        y + l.spacing / 2,
+      );
+      canvas.drawRect(
+        band,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              const Color(0x00FFE7A8),
+              const Color(0x66FFE7A8),
+              const Color(0x00FFE7A8),
+            ],
+          ).createShader(band),
+      );
+    }
     final src = Rect.fromLTWH(
       0,
       0,
@@ -408,18 +445,48 @@ class AbacusPainter extends CustomPainter {
       }
       // Digit of this row.
       final n = physics.countedBeads(r);
+      final active = o?.row == r;
       final tp = TextPainter(
         text: TextSpan(
           text: '$n',
           style: TextStyle(
-            fontSize: math.min(l.spacing * 0.5, 30),
-            fontWeight: FontWeight.w600,
-            color: n == 0 ? const Color(0x55402A1A) : const Color(0xFF402A1A),
+            fontSize: math.min(l.spacing * (active ? 0.62 : 0.5), 36),
+            fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+            color: active
+                ? _accent
+                : n == 0
+                ? const Color(0x55402A1A)
+                : const Color(0xFF402A1A),
           ),
         ),
         textDirection: TextDirection.ltr,
       )..layout();
       tp.paint(canvas, Offset(l.digitsX - tp.width / 2, y - tp.height / 2));
+    }
+    if (o?.fingerRow != null && o?.fingerX != null) {
+      // The invisible finger: a soft fingertip pressing the bead's edge.
+      final c = Offset(l.beadX(o!.fingerX!), l.wireY(o.fingerRow!));
+      final radius = l.beadHeight * 0.42;
+      canvas.drawCircle(
+        c.translate(1, 2),
+        radius,
+        Paint()
+          ..color = Colors.black.withValues(alpha: 0.18)
+          ..maskFilter = MaskFilter.blur(BlurStyle.normal, radius * 0.35),
+      );
+      canvas.drawCircle(
+        c,
+        radius,
+        Paint()..color = const Color(0xFFF2B8A0).withValues(alpha: 0.72),
+      );
+      canvas.drawCircle(
+        c,
+        radius,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 2
+          ..color = _accent.withValues(alpha: 0.8),
+      );
     }
   }
 

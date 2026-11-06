@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'arith/plan.dart';
 import 'l10n/app_localizations.dart';
 import 'ui/abacus_view.dart';
+import 'ui/example_panel.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -56,14 +58,14 @@ class _AbacusScreenState extends State<AbacusScreen> {
     super.dispose();
   }
 
-  String _format(int n) {
-    final s = n.toString();
-    final b = StringBuffer();
-    for (var i = 0; i < s.length; i++) {
-      if (i > 0 && (s.length - i) % 3 == 0) b.write(' ');
-      b.write(s[i]);
+  Future<void> _enterExample() async {
+    final rows = _controller.physics.config.rows;
+    var max = 1;
+    for (var i = 0; i < rows; i++) {
+      max *= 10;
     }
-    return b.toString();
+    final e = await showExampleEntry(context, maxValue: max - 1);
+    if (e != null) _controller.play(e);
   }
 
   @override
@@ -96,7 +98,7 @@ class _AbacusScreenState extends State<AbacusScreen> {
                           child: ValueListenableBuilder<int>(
                             valueListenable: _controller.value,
                             builder: (context, v, _) => Text(
-                              _format(v),
+                              formatNumber(v),
                               maxLines: 1,
                               style: const TextStyle(
                                 fontSize: 40,
@@ -108,6 +110,13 @@ class _AbacusScreenState extends State<AbacusScreen> {
                           ),
                         ),
                       ),
+                    ),
+                    IconButton(
+                      tooltip: t.playTooltip,
+                      color: ink,
+                      iconSize: 30,
+                      icon: const Icon(Icons.calculate_outlined),
+                      onPressed: _enterExample,
                     ),
                     IconButton(
                       tooltip: _controller.tiltEnabled ? t.tiltOn : t.tiltOff,
@@ -149,6 +158,7 @@ class _AbacusScreenState extends State<AbacusScreen> {
                   ],
                 ),
               ),
+              ExamplePanel(controller: _controller),
               Expanded(child: AbacusView(controller: _controller)),
             ],
           ),
