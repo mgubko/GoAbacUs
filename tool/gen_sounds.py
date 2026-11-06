@@ -1,5 +1,6 @@
 """Procedurally synthesizes the abacus impact sounds (modal synthesis).
 
+Not used any more: the app now uses real recorded clicks (tool/cut_sounds.py).
 Run:  python3 tool/gen_sounds.py   -> writes assets/sounds/*.wav
 
 bone_*: bead hits bead (solid hardwood). A dull "tock": a ~1.5 ms contact
