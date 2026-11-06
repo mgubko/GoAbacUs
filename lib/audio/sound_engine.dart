@@ -88,9 +88,9 @@ class SoundEngine {
   bool _hasVibrator = false;
 
   /// Impulse (kg·m/s) that gives the strongest buzz: a full row of ten
-  /// beads hitting the frame at about 0.75 m/s.
-  static const double _fullImpulse = 0.06;
-  static const double _minImpulse = 0.0015;
+  /// beads hitting the frame at 0.25 m/s, or one bead flicked at 2.5 m/s.
+  static const double _fullImpulse = 0.02;
+  static const double _minImpulse = 0.001;
 
   /// Buzz on frame hits, stronger and longer for a bigger impulse.
   void _vibrate(List<Impact> impacts) {
@@ -108,8 +108,9 @@ class SoundEngine {
     final k = math.min(1.0, impulse / _fullImpulse);
     if (_hasVibrator) {
       Vibration.vibrate(
-        duration: (8 + 32 * k).round(),
-        amplitude: _amplitude ? (25 + 230 * k).round() : -1,
+        // Short buzzes under ~15 ms are not felt on many phones.
+        duration: (15 + 45 * k).round(),
+        amplitude: _amplitude ? (70 + 185 * k).round() : -1,
       );
     } else if (k > 0.6) {
       HapticFeedback.heavyImpact();

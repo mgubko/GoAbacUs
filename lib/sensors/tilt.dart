@@ -21,6 +21,7 @@ class TiltSensor {
   bool available = false;
 
   void start() {
+    _sub?.cancel();
     refreshRotation();
     try {
       _sub =
@@ -28,8 +29,9 @@ class TiltSensor {
             samplingPeriod: SensorInterval.gameInterval,
           ).listen(
             _onEvent,
-            onError: (_) => available = false,
-            cancelOnError: true,
+            // Keep listening after a sensor hiccup instead of going deaf.
+            onError: (_) {},
+            cancelOnError: false,
           );
     } catch (_) {
       available = false;
@@ -62,10 +64,16 @@ class TiltSensor {
     normal += (n - normal) * k;
   }
 
-  void pause() => _sub?.pause();
+  /// Stops listening while the app is in the background. The subscription is
+  /// cancelled rather than paused: pausing nests (inactive, hidden and paused
+  /// each paused it again) and a single resume left the sensor switched off.
+  void pause() {
+    _sub?.cancel();
+    _sub = null;
+  }
 
   void resume() {
-    if (_sub?.isPaused ?? false) _sub!.resume();
+    if (_sub == null) start();
   }
 
   void dispose() => _sub?.cancel();
