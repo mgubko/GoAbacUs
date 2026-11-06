@@ -70,11 +70,21 @@ enum ImpactKind { bead, frame }
 
 /// A collision that happened during a step. Used for sound and haptics.
 class Impact {
-  const Impact(this.row, this.position, this.speed, this.kind);
+  const Impact(
+    this.row,
+    this.position,
+    this.speed,
+    this.kind, {
+    this.impulse = 0,
+  });
   final int row;
   final double position;
   final double speed;
   final ImpactKind kind;
+
+  /// Momentum delivered to the frame (kg·m/s): the whole group of beads that
+  /// moves together counts, so a row of ten hits harder than one bead.
+  final double impulse;
 }
 
 /// A finger holding a bead.
@@ -329,6 +339,24 @@ class AbacusPhysics {
     return t;
   }
 
+  /// Momentum towards the frame of the bead at [from] and the beads pressed
+  /// behind it, moving in direction [dir] (-1 left, +1 right).
+  double _groupMomentum(List<double> xs, List<double> vs, int from, int dir) {
+    var p = 0.0;
+    var i = from;
+    while (i >= 0 && i < xs.length) {
+      final s = vs[i] * dir;
+      if (s <= 0) break;
+      p += config.beadMass * s;
+      final next = i - dir;
+      if (next < 0 || next >= xs.length) break;
+      final gap = (xs[i] - xs[next]).abs() - config.beadLength;
+      if (gap > 0.001) break;
+      i = next;
+    }
+    return p;
+  }
+
   void _resolveContacts(
     int r,
     List<Impact> impacts,
@@ -350,7 +378,15 @@ class AbacusPhysics {
         xs[0] = lo;
         if (vs[0] < 0) {
           if (first && !touching[0] && -vs[0] > _impactSpeed) {
-            impacts.add(Impact(r, 0, -vs[0], ImpactKind.frame));
+            impacts.add(
+              Impact(
+                r,
+                0,
+                -vs[0],
+                ImpactKind.frame,
+                impulse: _groupMomentum(xs, vs, 0, -1),
+              ),
+            );
           }
           // Slow arrivals dock at the frame instead of bouncing.
           vs[0] = -vs[0] > c.captureSpeed ? -vs[0] * c.wallRestitution : 0;
@@ -360,7 +396,15 @@ class AbacusPhysics {
         xs[n - 1] = hi;
         if (vs[n - 1] > 0) {
           if (first && !touching[n] && vs[n - 1] > _impactSpeed) {
-            impacts.add(Impact(r, c.wireLength, vs[n - 1], ImpactKind.frame));
+            impacts.add(
+              Impact(
+                r,
+                c.wireLength,
+                vs[n - 1],
+                ImpactKind.frame,
+                impulse: _groupMomentum(xs, vs, n - 1, 1),
+              ),
+            );
           }
           vs[n - 1] = vs[n - 1] > c.captureSpeed
               ? -vs[n - 1] * c.wallRestitution

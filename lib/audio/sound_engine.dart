@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:vibration/vibration.dart';
 
 import '../physics/abacus_physics.dart';
 
@@ -82,7 +83,50 @@ class SoundEngine {
   static const _variants = 4;
   static const _maxPerFrame = 4;
 
+  bool vibrationEnabled = true;
+  bool _amplitude = false;
+  bool _hasVibrator = false;
+
+  /// Impulse (kg·m/s) that gives the strongest buzz: a full row of ten
+  /// beads hitting the frame at about 0.75 m/s.
+  static const double _fullImpulse = 0.06;
+  static const double _minImpulse = 0.0015;
+
+  /// Buzz on frame hits, stronger and longer for a bigger impulse.
+  void _vibrate(List<Impact> impacts) {
+    if (!vibrationEnabled) return;
+    var impulse = 0.0;
+    for (final i in impacts) {
+      if (i.kind == ImpactKind.frame && i.impulse > impulse) {
+        impulse = i.impulse;
+      }
+    }
+    if (impulse < _minImpulse) return;
+    final now = DateTime.now();
+    if (now.difference(_lastHaptic).inMilliseconds < 40) return;
+    _lastHaptic = now;
+    final k = math.min(1.0, impulse / _fullImpulse);
+    if (_hasVibrator) {
+      Vibration.vibrate(
+        duration: (8 + 32 * k).round(),
+        amplitude: _amplitude ? (25 + 230 * k).round() : -1,
+      );
+    } else if (k > 0.6) {
+      HapticFeedback.heavyImpact();
+    } else if (k > 0.25) {
+      HapticFeedback.mediumImpact();
+    } else {
+      HapticFeedback.lightImpact();
+    }
+  }
+
   Future<void> init() async {
+    try {
+      _hasVibrator = await Vibration.hasVibrator();
+      _amplitude = _hasVibrator && await Vibration.hasAmplitudeControl();
+    } catch (_) {
+      _hasVibrator = false;
+    }
     try {
       await AudioPlayer.global.setAudioContext(
         AudioContextConfig(
@@ -113,14 +157,7 @@ class SoundEngine {
   void play(List<Impact> impacts) {
     if (impacts.isEmpty || _paused) return;
     impacts.sort((a, b) => b.speed.compareTo(a.speed));
-    final strongest = impacts.first.speed;
-    if (strongest > 0.7) {
-      final now = DateTime.now();
-      if (now.difference(_lastHaptic).inMilliseconds > 60) {
-        _lastHaptic = now;
-        HapticFeedback.lightImpact();
-      }
-    }
+    _vibrate(impacts);
     if (!enabled || !_ready) return;
     for (final impact in impacts.take(_maxPerFrame)) {
       final volume = (0.15 + 0.85 * math.min(1.0, impact.speed / 1.2)).clamp(

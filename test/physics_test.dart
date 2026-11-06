@@ -193,4 +193,26 @@ void main() {
     }
     expect(impacts.where((e) => e.kind == ImpactKind.bead).length, 1);
   });
+
+  test('a group hitting the frame delivers more impulse than one bead', () {
+    double impulse(int count) {
+      final p = AbacusPhysics();
+      // `count` beads touching each other, all flying left.
+      for (var i = 0; i < count; i++) {
+        p.x[0][i] = 0.08 + i * p.config.beadLength;
+        p.v[0][i] = -0.5;
+      }
+      for (var k = 0; k < 240; k++) {
+        for (final e in p.step(1 / 240)) {
+          if (e.kind == ImpactKind.frame) return e.impulse;
+        }
+      }
+      return 0;
+    }
+
+    final one = impulse(1);
+    final five = impulse(5);
+    expect(one, greaterThan(0));
+    expect(five, closeTo(one * 5, one * 0.5));
+  });
 }
