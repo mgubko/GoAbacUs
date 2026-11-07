@@ -7,7 +7,9 @@ String formatNumber(int n) {
   final s = n.abs().toString();
   final b = StringBuffer(n < 0 ? '−' : '');
   for (var i = 0; i < s.length; i++) {
-    if (i > 0 && (s.length - i) % 3 == 0) b.write(' ');
+    // No-break space: a long example wraps between terms, never inside a
+    // number.
+    if (i > 0 && (s.length - i) % 3 == 0) b.write('\u00A0');
     b.write(s[i]);
   }
   return b.toString();
@@ -32,7 +34,8 @@ class Example {
       if (i == 0) {
         b.write(formatNumber(t));
       } else {
-        b.write(t < 0 ? ' − ' : ' + ');
+        // The sign stays with its number when the line wraps.
+        b.write(t < 0 ? ' −\u00A0' : ' +\u00A0');
         b.write(formatNumber(t.abs()));
       }
     }

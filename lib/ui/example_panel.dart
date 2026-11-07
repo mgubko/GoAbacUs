@@ -149,11 +149,20 @@ class ExamplePanel extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    SizedBox(
-                      height: 30,
-                      child: Align(
-                        alignment: Alignment.centerLeft,
-                        child: FittedBox(fit: BoxFit.scaleDown, child: line),
+                    // A long example wraps onto more lines at a readable
+                    // size; past four lines it scrolls, keeping the end in
+                    // view, so the abacus keeps its room.
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(
+                        minHeight: 30,
+                        maxHeight: 4 * 30,
+                      ),
+                      child: SingleChildScrollView(
+                        reverse: true,
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: line,
+                        ),
                       ),
                     ),
                     DefaultTextStyle.merge(
@@ -215,7 +224,7 @@ class ExamplePanel extends StatelessWidget {
       final v = e.terms[i];
       final text = i == 0
           ? formatNumber(v)
-          : '${v < 0 ? ' − ' : ' + '}${formatNumber(v.abs())}';
+          : '${v < 0 ? ' −\u00A0' : ' +\u00A0'}${formatNumber(v.abs())}';
       final style = i == current && !showAnswer
           ? const TextStyle(color: _accent, fontWeight: FontWeight.w800)
           : i > current
@@ -226,16 +235,16 @@ class ExamplePanel extends StatelessWidget {
     if (showAnswer) {
       spans.add(
         TextSpan(
-          text: ' = ${formatNumber(e.result)}',
+          text: ' =\u00A0${formatNumber(e.result)}',
           style: const TextStyle(color: _accent, fontWeight: FontWeight.w800),
         ),
       );
     }
     return Text.rich(
       TextSpan(children: spans),
-      maxLines: 1,
       style: const TextStyle(
         fontSize: 24,
+        height: 1.25,
         fontWeight: FontWeight.w600,
         color: _ink,
         fontFeatures: [FontFeature.tabularFigures()],
@@ -308,8 +317,8 @@ class _ExampleEntryState extends State<_ExampleEntry> {
   }
 
   String get _pretty => _text
-      .replaceAll('+', ' + ')
-      .replaceAll('−', ' − ')
+      .replaceAll('+', ' +\u00A0')
+      .replaceAll('−', ' −\u00A0')
       .replaceAllMapped(
         RegExp(r'\d+'),
         (m) => formatNumber(int.parse(m.group(0)!)),
@@ -335,26 +344,28 @@ class _ExampleEntryState extends State<_ExampleEntry> {
               children: [
                 Text(t.enterExample, style: const TextStyle(color: _ink)),
                 const SizedBox(height: 8),
+                // Grows onto more lines instead of shrinking the digits.
                 Container(
-                  height: 56,
+                  constraints: const BoxConstraints(minHeight: 56),
                   alignment: Alignment.centerRight,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: _ink.withValues(alpha: 0.25)),
                   ),
-                  child: FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      _pretty.isEmpty ? '25 + 17 − 8' : _pretty,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w600,
-                        color: _pretty.isEmpty
-                            ? _ink.withValues(alpha: 0.25)
-                            : _ink,
-                      ),
+                  child: Text(
+                    _pretty.isEmpty ? '25 + 17 − 8' : _pretty,
+                    textAlign: TextAlign.right,
+                    style: TextStyle(
+                      fontSize: 30,
+                      fontWeight: FontWeight.w600,
+                      color: _pretty.isEmpty
+                          ? _ink.withValues(alpha: 0.25)
+                          : _ink,
                     ),
                   ),
                 ),

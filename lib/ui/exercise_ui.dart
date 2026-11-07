@@ -188,17 +188,14 @@ class ExercisePanel extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        '${e.task.format()} = ${solving ? '?' : formatNumber(e.answer)}',
-                        style: const TextStyle(
-                          fontSize: 34,
-                          fontWeight: FontWeight.w800,
-                          color: _ink,
-                          fontFeatures: [FontFeature.tabularFigures()],
-                        ),
+                    // Wraps between terms instead of shrinking.
+                    child: Text(
+                      '${e.task.format()} =\u00A0${solving ? '?' : formatNumber(e.answer)}',
+                      style: const TextStyle(
+                        fontSize: 34,
+                        fontWeight: FontWeight.w800,
+                        color: _ink,
+                        fontFeatures: [FontFeature.tabularFigures()],
                       ),
                     ),
                   ),
