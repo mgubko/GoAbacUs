@@ -115,6 +115,10 @@ class SoundEngine {
   final _wood = <_Voices>[];
   _Loop? _slide;
   _Loop? _rattle;
+  final _spin = <AudioPlayer>[];
+  var _spinNext = 0;
+  AudioPlayer? _spinNow;
+  double _spinLevel = 0;
   _Voices? _success;
   _Voices? _fail;
   final _rng = math.Random();
@@ -184,6 +188,13 @@ class SoundEngine {
         _bone.add(await _Voices.load('sounds/bone_$i.wav', 3));
         _wood.add(await _Voices.load('sounds/wood_$i.wav', 2));
       }
+      for (var i = 0; i < 2; i++) {
+        final p = AudioPlayer();
+        await p.setPlayerMode(PlayerMode.lowLatency);
+        await p.setReleaseMode(ReleaseMode.stop);
+        await p.setSource(AssetSource('sounds/spin_$i.wav'));
+        _spin.add(p);
+      }
       _success = await _Voices.load('sounds/success.wav', 1);
       _fail = await _Voices.load('sounds/fail.wav', 1);
       _slide = await _Loop.load('sounds/slide.wav');
@@ -201,6 +212,9 @@ class SoundEngine {
       for (final v in [..._bone, ..._wood]) {
         v.stopAll();
       }
+      for (final p in _spin) {
+        p.stop().catchError((_) {});
+      }
       _slide?.pause();
       _rattle?.pause();
     } else {
@@ -216,6 +230,30 @@ class SoundEngine {
     final on = enabled && !_paused;
     _slide?.set(on ? masterVolume * 0.7 * slide : 0);
     _rattle?.set(on ? masterVolume * 0.8 * rattle : 0);
+  }
+
+  /// Beads spinning round their wires under a finger brushed across the
+  /// rows. [fresh] starts a new swipe; later calls only make the sound
+  /// louder as the swipe touches more wires. [level] is 0..1.
+  void spin(double level, {required bool fresh}) {
+    if (!enabled || !_ready || _paused || _spin.isEmpty) return;
+    final volume = masterVolume * level;
+    if (fresh) {
+      final p = _spin[_spinNext];
+      _spinNext = (_spinNext + 1) % _spin.length;
+      _spinNow = p;
+      _spinLevel = level;
+      () async {
+        try {
+          await p.stop();
+          await p.setVolume(volume);
+          await p.resume();
+        } catch (_) {}
+      }();
+    } else if (level > _spinLevel + 0.04) {
+      _spinLevel = level;
+      _spinNow?.setVolume(volume).catchError((_) {});
+    }
   }
 
   /// Reward for a right answer, or a gentle "oh no" for a wrong one.
@@ -244,6 +282,9 @@ class SoundEngine {
   Future<void> dispose() async {
     for (final v in [..._bone, ..._wood, ?_success, ?_fail]) {
       await v.dispose();
+    }
+    for (final p in _spin) {
+      await p.dispose();
     }
     await _slide?.dispose();
     await _rattle?.dispose();

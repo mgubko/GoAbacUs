@@ -5,7 +5,8 @@ Usage:  ffmpeg -i recording.mp3 -ac 1 -ar 44100 src.wav
 
 Writes assets/sounds/bone_*.wav (bead hits bead), wood_*.wav (beads hit
 the frame), and two seamless loops: slide.wav (one bead sliding on the wire)
-and rattle.wav (a group sliding together, lightly knocking). The onset times below were picked from the reference recording
+and rattle.wav (a group sliding together, lightly knocking), and spin_*.wav
+(beads spun round the wire by a vertical swipe). The onset times below were picked from the reference recording
 Mikhail supplied (2026-11-06): isolated clicks with no other hit within
 ~140 ms. The first seconds of that recording hold the heavier group hits,
 used for the frame.
@@ -21,6 +22,9 @@ BEAD = [9.014, 13.574, 16.279, 24.845]
 # (onset, low-pass Hz or None). 2.054 was too sharp and loud (Mikhail picked
 # it out, 2026-11-06); replaced by a softened 23.810.
 FRAME = [(0.707, None), (23.810, 3500), (3.505, None), (5.510, None)]
+# Beads spun round the wire by a finger brushed across the rows (Mikhail,
+# 2026-11-07: "0:04-0:06"): two bursts, from-to seconds.
+SPIN = [(4.285, 5.40), (5.405, 6.27)]
 
 
 def cut(x, sr, t, length):
@@ -103,6 +107,13 @@ if __name__ == '__main__':
         if lp:
             s = lowpass(s, sr, lp)
         write(f'wood_{i}.wav', s, sr, 0.5 if lp else 0.55)
+    for i, (a, b) in enumerate(SPIN):
+        seg = x[int(a * sr):int(b * sr)].copy()
+        seg -= seg.mean()
+        fi, fo = int(sr * 0.004), int(sr * 0.08)
+        seg[:fi] *= np.linspace(0, 1, fi)
+        seg[-fo:] *= np.linspace(1, 0, fo) ** 2
+        write(f'spin_{i}.wav', seg, sr, 0.6)
     write('slide.wav', slide_loop(sr), sr, 0.35)
     write('rattle.wav', rattle_loop(x, sr), sr, 0.4)
     print('ok')

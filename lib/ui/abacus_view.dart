@@ -265,6 +265,10 @@ class _AbacusViewState extends State<AbacusView>
   ui.Image? _bone;
   AbacusArt? _art;
 
+  /// Fingers brushed up or down across the rows: they spin the beads round
+  /// their wires instead of moving them.
+  final _swipes = <int, _Swipe>{};
+
   /// Fingers that touched a gap and wait to reach a bead.
   final _pending = <int, int>{};
   final _lastMove = <int, Duration>{};
@@ -319,6 +323,7 @@ class _AbacusViewState extends State<AbacusView>
       if (_ticker.isActive) _ticker.stop();
       _pending.clear();
       _lastMove.clear();
+      _swipes.clear();
       c.physics.grabs.removeWhere((k, _) => k >= 0);
       c.sound.setPaused(true);
       c.tilt.pause();
@@ -339,6 +344,7 @@ class _AbacusViewState extends State<AbacusView>
     c.takeOver();
     final row = _layout.rowAt(e.localPosition.dy);
     if (row == null) return;
+    _swipes[e.pointer] = _Swipe(row, e.localPosition, e.timeStamp);
     final pos = _layout.toMetres(e.localPosition.dx);
     final bead = c.physics.beadAt(row, pos, tolerance: 0.004);
     if (bead != null) {
@@ -356,6 +362,7 @@ class _AbacusViewState extends State<AbacusView>
 
   void _move(PointerMoveEvent e) {
     if (_art == null) return;
+    if (_spinSwipe(e)) return;
     final pos = _layout.toMetres(e.localPosition.dx);
     final pendingRow = _pending[e.pointer];
     if (pendingRow != null) {
@@ -386,7 +393,49 @@ class _AbacusViewState extends State<AbacusView>
     _lastMove[e.pointer] = e.timeStamp;
   }
 
+  /// Follows a finger across the rows. Once it crosses into another row
+  /// moving mostly up or down, it no longer drags beads: every wire it
+  /// passes spins its beads, louder for a faster swipe over more wires.
+  bool _spinSwipe(PointerMoveEvent e) {
+    final s = _swipes[e.pointer];
+    if (s == null) return false;
+    final row = _layout.rowAt(e.localPosition.dy);
+    if (row == null || row == s.row) return s.spinning;
+    final d = e.localPosition - s.from;
+    if (!s.spinning && d.dy.abs() < d.dx.abs() * 1.2) {
+      // A sideways drag that wandered into the next row: keep dragging.
+      return false;
+    }
+    final dt = (e.timeStamp - s.time).inMicroseconds / 1e6;
+    final crossed = (row - s.row).abs();
+    // Speed in wires per second, smoothed over the crossings.
+    final f = crossed / math.max(dt, 0.004);
+    s.speed = s.spinning ? s.speed * 0.5 + f * 0.5 : f;
+    s.row = row;
+    s.time = e.timeStamp;
+    s.from = e.localPosition;
+    s.wires += crossed;
+    final fresh = !s.spinning;
+    if (fresh) {
+      s.spinning = true;
+      _pending.remove(e.pointer);
+      c.physics.grabs.remove(e.pointer);
+    }
+    c.sound.spin(_spinLevel(s.speed, s.wires), fresh: fresh);
+    return true;
+  }
+
+  /// Loudness grows as log(f·n): f wires per second, n wires touched. A slow
+  /// brush over two wires is a whisper; 40 wires/s over all ten is full.
+  static double _spinLevel(double f, int n) {
+    const quiet = 2.0 * 2;
+    const loud = 40.0 * 10;
+    final k = math.log(math.max(f * n, quiet) / quiet) / math.log(loud / quiet);
+    return 0.15 + 0.85 * k.clamp(0.0, 1.0);
+  }
+
   void _up(PointerEvent e) {
+    _swipes.remove(e.pointer);
     _pending.remove(e.pointer);
     _lastMove.remove(e.pointer);
     if (e.pointer >= 0) c.physics.grabs.remove(e.pointer);
@@ -427,4 +476,16 @@ class _AbacusViewState extends State<AbacusView>
       },
     );
   }
+}
+
+class _Swipe {
+  _Swipe(this.row, this.from, this.time);
+  int row;
+  Offset from;
+  Duration time;
+  double speed = 0;
+
+  /// Wires touched so far, the first one included.
+  int wires = 1;
+  bool spinning = false;
 }
