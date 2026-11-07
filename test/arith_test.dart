@@ -28,7 +28,7 @@ void main() {
     final r = parseExample('25 + 17 − 8', maxValue: max);
     expect(r.example!.terms, [25, 17, -8]);
     expect(r.example!.result, 34);
-    expect(r.example!.format(), '25 + 17 − 8');
+    expect(r.example!.format(), '25 +\u00A017 −\u00A08');
     expect(parseExample('12-3+', maxValue: max).error, ExampleError.unfinished);
     expect(parseExample('', maxValue: max).error, ExampleError.empty);
     expect(parseExample('5-7', maxValue: max).error, ExampleError.negative);
@@ -100,7 +100,7 @@ void main() {
     expect(tape.terms, [25, 7]);
     tape.update(24, true, ms(5000));
     tape.update(24, true, ms(6600));
-    expect(tape.example!.format(), '25 + 7 − 8');
+    expect(tape.example!.format(), '25 +\u00A07 −\u00A08');
     tape.update(0, true, ms(7000));
     tape.update(0, true, ms(8600));
     expect(tape.terms, isEmpty);
