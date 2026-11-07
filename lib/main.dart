@@ -101,7 +101,11 @@ class _AbacusScreenState extends State<AbacusScreen> {
       _controller.clear();
       _tutorialExample = null;
     }
+    // The tutorial covers the abacus and stops its ticker, so nothing would
+    // fade the sliding and spinning sounds out: they would hang on.
+    _controller.sound.setPaused(true);
     final r = await showTutorial(context, page: _tutorialPage);
+    _controller.sound.setPaused(false);
     if (!mounted) return;
     _tutorialPage = r?.page ?? 0;
     final e = r?.example;
@@ -111,17 +115,22 @@ class _AbacusScreenState extends State<AbacusScreen> {
     _controller.play(e);
   }
 
-  Future<void> _menu(_MenuItem item) async {
-    switch (item) {
-      case _MenuItem.tutorial:
-        await _openTutorial();
-      case _MenuItem.language:
-        await showLanguagePicker(context);
-      case _MenuItem.tilt:
-        setState(() => _controller.tiltEnabled = !_controller.tiltEnabled);
-      case _MenuItem.sound:
-        setState(() => _controller.sound.enabled = !_controller.sound.enabled);
-    }
+  /// A toolbar button. Compact, so that all seven fit on a phone next to
+  /// the number; tablets have room to spare.
+  Widget _tool(IconData icon, String tooltip, VoidCallback onPressed) {
+    final wide = MediaQuery.sizeOf(context).width >= 600;
+    return IconButton(
+      tooltip: tooltip,
+      color: const Color(0xFF402A1A),
+      iconSize: wide ? 32 : 28,
+      padding: EdgeInsets.zero,
+      constraints: BoxConstraints(
+        minWidth: wide ? 56 : 40,
+        minHeight: wide ? 56 : 44,
+      ),
+      icon: Icon(icon),
+      onPressed: onPressed,
+    );
   }
 
   @override
@@ -141,7 +150,7 @@ class _AbacusScreenState extends State<AbacusScreen> {
           child: Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(20, 6, 12, 0),
+                padding: const EdgeInsets.fromLTRB(16, 6, 6, 0),
                 child: Row(
                   children: [
                     // The number shrinks to fit, so the buttons always stay
@@ -167,60 +176,47 @@ class _AbacusScreenState extends State<AbacusScreen> {
                         ),
                       ),
                     ),
-                    IconButton(
-                      tooltip: t.exercisesTooltip,
-                      color: ink,
-                      iconSize: 30,
-                      icon: const Icon(Icons.school_outlined),
-                      onPressed: _startExercises,
+                    _tool(
+                      Icons.menu_book_outlined,
+                      t.menuTutorial,
+                      _openTutorial,
                     ),
-                    IconButton(
-                      tooltip: t.playTooltip,
-                      color: ink,
-                      iconSize: 30,
-                      icon: const Icon(Icons.calculate_outlined),
-                      onPressed: _enterExample,
+                    _tool(
+                      Icons.school_outlined,
+                      t.exercisesTooltip,
+                      _startExercises,
                     ),
-                    IconButton(
-                      tooltip: t.resetTooltip,
-                      color: ink,
-                      iconSize: 30,
-                      icon: const Icon(Icons.restart_alt),
-                      onPressed: _controller.clear,
+                    _tool(
+                      Icons.calculate_outlined,
+                      t.playTooltip,
+                      _enterExample,
                     ),
-                    PopupMenuButton<_MenuItem>(
-                      iconColor: ink,
-                      iconSize: 30,
-                      color: const Color(0xFFF6EEE0),
-                      onSelected: _menu,
-                      itemBuilder: (context) => [
-                        PopupMenuItem(
-                          value: _MenuItem.tutorial,
-                          child: ListTile(
-                            leading: const Icon(Icons.menu_book_outlined),
-                            title: Text(t.menuTutorial),
-                          ),
-                        ),
-                        PopupMenuItem(
-                          value: _MenuItem.language,
-                          child: ListTile(
-                            leading: const Icon(Icons.language),
-                            title: Text(t.menuLanguage),
-                          ),
-                        ),
-                        const PopupMenuDivider(),
-                        CheckedPopupMenuItem(
-                          value: _MenuItem.tilt,
-                          checked: _controller.tiltEnabled,
-                          child: Text(t.menuTilt),
-                        ),
-                        CheckedPopupMenuItem(
-                          value: _MenuItem.sound,
-                          checked: _controller.sound.enabled,
-                          child: Text(t.menuSound),
-                        ),
-                      ],
+                    _tool(
+                      Icons.language,
+                      t.menuLanguage,
+                      () => showLanguagePicker(context),
                     ),
+                    _tool(
+                      _controller.tiltEnabled
+                          ? Icons.screen_rotation
+                          : Icons.screen_lock_rotation,
+                      _controller.tiltEnabled ? t.tiltOn : t.tiltOff,
+                      () => setState(
+                        () =>
+                            _controller.tiltEnabled = !_controller.tiltEnabled,
+                      ),
+                    ),
+                    _tool(
+                      _controller.sound.enabled
+                          ? Icons.volume_up
+                          : Icons.volume_off,
+                      _controller.sound.enabled ? t.soundOn : t.soundOff,
+                      () => setState(
+                        () => _controller.sound.enabled =
+                            !_controller.sound.enabled,
+                      ),
+                    ),
+                    _tool(Icons.restart_alt, t.resetTooltip, _controller.clear),
                   ],
                 ),
               ),
@@ -258,5 +254,3 @@ class _AbacusScreenState extends State<AbacusScreen> {
     );
   }
 }
-
-enum _MenuItem { tutorial, language, tilt, sound }
