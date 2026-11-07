@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -155,8 +157,11 @@ class _AbacusScreenState extends State<AbacusScreen> {
                   children: [
                     // The number shrinks to fit, so the buttons always stay
                     // on screen (10 full rows give 11 111 111 110).
+                    // Its height is fixed, so a shrinking number does not
+                    // lift the abacus.
                     Expanded(
-                      child: Align(
+                      child: Container(
+                        height: 48,
                         alignment: Alignment.centerLeft,
                         child: FittedBox(
                           fit: BoxFit.scaleDown,
@@ -220,31 +225,59 @@ class _AbacusScreenState extends State<AbacusScreen> {
                   ],
                 ),
               ),
-              ValueListenableBuilder<int>(
-                valueListenable: _controller.changes,
-                builder: (context, _, _) =>
-                    _controller.exercise != null && _controller.player == null
-                    ? ExercisePanel(controller: _controller)
-                    : ExamplePanel(
-                        controller: _controller,
-                        // Shown while the example came from the tutorial.
-                        onBackToTutorial:
-                            _tutorialExample != null &&
-                                identical(
-                                  _controller.player?.example,
-                                  _tutorialExample,
-                                )
-                            ? _openTutorial
-                            : null,
-                      ),
-              ),
+              // The panel keeps a fixed slot above the abacus; extra lines
+              // of a long example spill over the free space on top of the
+              // abacus area, so the abacus never moves while the example
+              // grows.
               Expanded(
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    AbacusView(controller: _controller),
-                    ExerciseResult(controller: _controller),
-                  ],
+                child: ValueListenableBuilder<int>(
+                  valueListenable: _controller.changes,
+                  builder: (context, _, abacus) {
+                    final exercise =
+                        _controller.exercise != null &&
+                        _controller.player == null;
+                    return Stack(
+                      children: [
+                        Positioned.fill(
+                          // One slot for both panels: the abacus stays put
+                          // when exercises start, and two more lines of an
+                          // example fit in it.
+                          top: math.max(
+                            ExercisePanel.slotHeight,
+                            ExamplePanel.slotHeight,
+                          ),
+                          child: abacus!,
+                        ),
+                        Positioned(
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          child: exercise
+                              ? ExercisePanel(controller: _controller)
+                              : ExamplePanel(
+                                  controller: _controller,
+                                  // Shown while the example came from the
+                                  // tutorial.
+                                  onBackToTutorial:
+                                      _tutorialExample != null &&
+                                          identical(
+                                            _controller.player?.example,
+                                            _tutorialExample,
+                                          )
+                                      ? _openTutorial
+                                      : null,
+                                ),
+                        ),
+                      ],
+                    );
+                  },
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      AbacusView(controller: _controller),
+                      ExerciseResult(controller: _controller),
+                    ],
+                  ),
                 ),
               ),
             ],
