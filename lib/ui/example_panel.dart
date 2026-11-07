@@ -212,6 +212,9 @@ Future<Example?> showExampleEntry(
     context: context,
     backgroundColor: const Color(0xFFF6EEE0),
     showDragHandle: true,
+    // A plain sheet stops at 9/16 of the screen, too short for the keypad
+    // on a phone: take the height needed and scroll if even that is short.
+    isScrollControlled: true,
     builder: (context) => _ExampleEntry(maxValue: maxValue),
   );
 }
@@ -281,75 +284,77 @@ class _ExampleEntryState extends State<_ExampleEntry> {
       ['C', '0', '', ''],
     ];
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(t.enterExample, style: const TextStyle(color: _ink)),
-              const SizedBox(height: 8),
-              Container(
-                height: 56,
-                alignment: Alignment.centerRight,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: _ink.withValues(alpha: 0.25)),
-                ),
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    _pretty.isEmpty ? '25 + 17 − 8' : _pretty,
-                    style: TextStyle(
-                      fontSize: 30,
-                      fontWeight: FontWeight.w600,
-                      color: _pretty.isEmpty
-                          ? _ink.withValues(alpha: 0.25)
-                          : _ink,
-                    ),
-                  ),
-                ),
-              ),
-              SizedBox(
-                height: 24,
-                child: _error == null
-                    ? null
-                    : Text(_error!, style: const TextStyle(color: _accent)),
-              ),
-              for (final row in keys)
-                Row(
-                  children: [
-                    for (final k in row)
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.all(4),
-                          child: k.isEmpty
-                              ? const SizedBox(height: 56)
-                              : _Key(label: k, onTap: () => _key(k)),
-                        ),
-                      ),
-                  ],
-                ),
-              Padding(
-                padding: const EdgeInsets.all(4),
-                child: SizedBox(
-                  width: double.infinity,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 16),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(t.enterExample, style: const TextStyle(color: _ink)),
+                const SizedBox(height: 8),
+                Container(
                   height: 56,
-                  child: FilledButton.icon(
-                    style: FilledButton.styleFrom(
-                      backgroundColor: _accent,
-                      textStyle: const TextStyle(fontSize: 20),
+                  alignment: Alignment.centerRight,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: _ink.withValues(alpha: 0.25)),
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      _pretty.isEmpty ? '25 + 17 − 8' : _pretty,
+                      style: TextStyle(
+                        fontSize: 30,
+                        fontWeight: FontWeight.w600,
+                        color: _pretty.isEmpty
+                            ? _ink.withValues(alpha: 0.25)
+                            : _ink,
+                      ),
                     ),
-                    icon: const Icon(Icons.play_arrow_rounded),
-                    label: Text(t.showButton),
-                    onPressed: () => _show(t),
                   ),
                 ),
-              ),
-            ],
+                SizedBox(
+                  height: 24,
+                  child: _error == null
+                      ? null
+                      : Text(_error!, style: const TextStyle(color: _accent)),
+                ),
+                for (final row in keys)
+                  Row(
+                    children: [
+                      for (final k in row)
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.all(4),
+                            child: k.isEmpty
+                                ? const SizedBox(height: 56)
+                                : _Key(label: k, onTap: () => _key(k)),
+                          ),
+                        ),
+                    ],
+                  ),
+                Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 56,
+                    child: FilledButton.icon(
+                      style: FilledButton.styleFrom(
+                        backgroundColor: _accent,
+                        textStyle: const TextStyle(fontSize: 20),
+                      ),
+                      icon: const Icon(Icons.play_arrow_rounded),
+                      label: Text(t.showButton),
+                      onPressed: () => _show(t),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

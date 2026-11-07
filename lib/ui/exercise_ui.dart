@@ -20,6 +20,9 @@ Future<ExerciseSettings?> showExerciseSetup(
     context: context,
     backgroundColor: const Color(0xFFF6EEE0),
     showDragHandle: true,
+    // A plain sheet stops at 9/16 of the screen, too short for the keypad
+    // on a phone: take the height needed and scroll if even that is short.
+    isScrollControlled: true,
     builder: (context) => _Setup(initial: initial),
   );
 }
@@ -45,78 +48,86 @@ class _SetupState extends State<_Setup> {
       textStyle: const TextStyle(fontSize: 16),
     );
     return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 480),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                t.exercisesTooltip,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: _ink,
+      child: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text(
+                  t.exercisesTooltip,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: _ink,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 16),
-              SegmentedButton<ExerciseOps>(
-                style: style,
-                showSelectedIcon: false,
-                segments: [
-                  ButtonSegment(value: ExerciseOps.add, label: Text(t.opsAdd)),
-                  ButtonSegment(value: ExerciseOps.sub, label: Text(t.opsSub)),
-                  ButtonSegment(
-                    value: ExerciseOps.both,
-                    label: Text(t.opsBoth),
-                  ),
-                ],
-                selected: {_ops},
-                onSelectionChanged: (s) => setState(() => _ops = s.first),
-              ),
-              const SizedBox(height: 12),
-              SegmentedButton<ExerciseLevel>(
-                style: style,
-                showSelectedIcon: false,
-                segments: [
-                  ButtonSegment(
-                    value: ExerciseLevel.easy,
-                    label: Text(t.levelEasy),
-                  ),
-                  ButtonSegment(
-                    value: ExerciseLevel.hard,
-                    label: Text(t.levelHard),
-                  ),
-                ],
-                selected: {_level},
-                onSelectionChanged: (s) => setState(() => _level = s.first),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _level == ExerciseLevel.easy
-                    ? t.levelEasyHint
-                    : t.levelHardHint,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: _ink.withValues(alpha: 0.7)),
-              ),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: 56,
-                child: FilledButton(
-                  style: FilledButton.styleFrom(
-                    backgroundColor: _accent,
-                    textStyle: const TextStyle(fontSize: 20),
-                  ),
-                  onPressed: () => Navigator.of(
-                    context,
-                  ).pop(ExerciseSettings(ops: _ops, level: _level)),
-                  child: Text(t.startButton),
+                const SizedBox(height: 16),
+                SegmentedButton<ExerciseOps>(
+                  style: style,
+                  showSelectedIcon: false,
+                  segments: [
+                    ButtonSegment(
+                      value: ExerciseOps.add,
+                      label: Text(t.opsAdd),
+                    ),
+                    ButtonSegment(
+                      value: ExerciseOps.sub,
+                      label: Text(t.opsSub),
+                    ),
+                    ButtonSegment(
+                      value: ExerciseOps.both,
+                      label: Text(t.opsBoth),
+                    ),
+                  ],
+                  selected: {_ops},
+                  onSelectionChanged: (s) => setState(() => _ops = s.first),
                 ),
-              ),
-            ],
+                const SizedBox(height: 12),
+                SegmentedButton<ExerciseLevel>(
+                  style: style,
+                  showSelectedIcon: false,
+                  segments: [
+                    ButtonSegment(
+                      value: ExerciseLevel.easy,
+                      label: Text(t.levelEasy),
+                    ),
+                    ButtonSegment(
+                      value: ExerciseLevel.hard,
+                      label: Text(t.levelHard),
+                    ),
+                  ],
+                  selected: {_level},
+                  onSelectionChanged: (s) => setState(() => _level = s.first),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  _level == ExerciseLevel.easy
+                      ? t.levelEasyHint
+                      : t.levelHardHint,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: _ink.withValues(alpha: 0.7)),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: 56,
+                  child: FilledButton(
+                    style: FilledButton.styleFrom(
+                      backgroundColor: _accent,
+                      textStyle: const TextStyle(fontSize: 20),
+                    ),
+                    onPressed: () => Navigator.of(
+                      context,
+                    ).pop(ExerciseSettings(ops: _ops, level: _level)),
+                    child: Text(t.startButton),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
