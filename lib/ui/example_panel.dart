@@ -45,8 +45,16 @@ String moveNote(AppLocalizations t, DigitStep step, int i) {
 /// The strip under the number: what was written down from the child's
 /// moves, or the example being shown with a caption for every digit.
 class ExamplePanel extends StatelessWidget {
-  const ExamplePanel({super.key, required this.controller});
+  const ExamplePanel({
+    super.key,
+    required this.controller,
+    this.onBackToTutorial,
+  });
   final AbacusController controller;
+
+  /// When set, a button leads back to the tutorial page the example came
+  /// from.
+  final VoidCallback? onBackToTutorial;
 
   @override
   Widget build(BuildContext context) {
@@ -152,7 +160,18 @@ class ExamplePanel extends StatelessWidget {
                       style: const TextStyle(fontSize: 15, color: _ink),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      child: SizedBox(height: 20, child: caption),
+                      // Scaled down rather than cut: the formula at its end
+                      // is what matters.
+                      child: SizedBox(
+                        height: 20,
+                        child: caption == null
+                            ? null
+                            : FittedBox(
+                                fit: BoxFit.scaleDown,
+                                alignment: Alignment.centerLeft,
+                                child: caption,
+                              ),
+                      ),
                     ),
                     DefaultTextStyle.merge(
                       style: TextStyle(
@@ -166,6 +185,12 @@ class ExamplePanel extends StatelessWidget {
                   ],
                 ),
               ),
+              if (onBackToTutorial != null)
+                _button(
+                  Icons.menu_book_outlined,
+                  t.backToTutorial,
+                  onBackToTutorial!,
+                ),
               ?button,
             ],
           ),

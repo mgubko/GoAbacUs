@@ -232,5 +232,8 @@
   "tutTryTitle": "Your turn",
   "tutTryBody": "Tap the calculator and type your own example: the abacus will solve it and explain every step below by these rules.\n\nIn Exercises you solve examples yourself.",
   "menuTilt": "Tilt moves the beads",
-  "menuSound": "Sound"
+  "menuSound": "Sound",
+  "menuLanguage": "Language",
+  "languageSystem": "As on the device",
+  "backToTutorial": "Back to the tutorial"
 }

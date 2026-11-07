@@ -320,4 +320,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuSound => 'Sound';
+
+  @override
+  String get menuLanguage => 'Language';
+
+  @override
+  String get languageSystem => 'As on the device';
+
+  @override
+  String get backToTutorial => 'Back to the tutorial';
 }

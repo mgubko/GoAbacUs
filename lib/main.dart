@@ -7,10 +7,12 @@ import 'l10n/app_localizations.dart';
 import 'ui/abacus_view.dart';
 import 'ui/example_panel.dart';
 import 'ui/exercise_ui.dart';
+import 'ui/language.dart';
 import 'ui/tutorial.dart';
 
-void main() {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await loadLocale();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -24,7 +26,15 @@ class GoAbacusApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return ValueListenableBuilder<Locale?>(
+      valueListenable: appLocale,
+      builder: (context, locale, _) => _app(locale),
+    );
+  }
+
+  Widget _app(Locale? locale) {
     return MaterialApp(
+      locale: locale,
       onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
       debugShowCheckedModeBanner: false,
       localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -81,13 +91,32 @@ class _AbacusScreenState extends State<AbacusScreen> {
     if (e != null) _controller.play(e);
   }
 
+  /// The tutorial page to come back to, and the example it sent us to show.
+  var _tutorialPage = 0;
+  Example? _tutorialExample;
+
+  Future<void> _openTutorial() async {
+    if (_tutorialExample != null) {
+      // Back from the tutorial's example: an empty abacus for the next one.
+      _controller.clear();
+      _tutorialExample = null;
+    }
+    final r = await showTutorial(context, page: _tutorialPage);
+    if (!mounted) return;
+    _tutorialPage = r?.page ?? 0;
+    final e = r?.example;
+    if (e == null) return;
+    _tutorialExample = e;
+    _controller.stopExercises();
+    _controller.play(e);
+  }
+
   Future<void> _menu(_MenuItem item) async {
     switch (item) {
       case _MenuItem.tutorial:
-        final e = await showTutorial(context);
-        if (e == null) return;
-        _controller.stopExercises();
-        _controller.play(e);
+        await _openTutorial();
+      case _MenuItem.language:
+        await showLanguagePicker(context);
       case _MenuItem.tilt:
         setState(() => _controller.tiltEnabled = !_controller.tiltEnabled);
       case _MenuItem.sound:
@@ -172,6 +201,13 @@ class _AbacusScreenState extends State<AbacusScreen> {
                             title: Text(t.menuTutorial),
                           ),
                         ),
+                        PopupMenuItem(
+                          value: _MenuItem.language,
+                          child: ListTile(
+                            leading: const Icon(Icons.language),
+                            title: Text(t.menuLanguage),
+                          ),
+                        ),
                         const PopupMenuDivider(),
                         CheckedPopupMenuItem(
                           value: _MenuItem.tilt,
@@ -193,7 +229,18 @@ class _AbacusScreenState extends State<AbacusScreen> {
                 builder: (context, _, _) =>
                     _controller.exercise != null && _controller.player == null
                     ? ExercisePanel(controller: _controller)
-                    : ExamplePanel(controller: _controller),
+                    : ExamplePanel(
+                        controller: _controller,
+                        // Shown while the example came from the tutorial.
+                        onBackToTutorial:
+                            _tutorialExample != null &&
+                                identical(
+                                  _controller.player?.example,
+                                  _tutorialExample,
+                                )
+                            ? _openTutorial
+                            : null,
+                      ),
               ),
               Expanded(
                 child: Stack(
@@ -212,4 +259,4 @@ class _AbacusScreenState extends State<AbacusScreen> {
   }
 }
 
-enum _MenuItem { tutorial, tilt, sound }
+enum _MenuItem { tutorial, language, tilt, sound }

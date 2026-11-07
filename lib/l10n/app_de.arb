@@ -83,5 +83,8 @@
   "tutTryTitle": "Jetzt du",
   "tutTryBody": "Tippe auf den Taschenrechner und gib ein eigenes Beispiel ein: Der Abakus rechnet es vor und erklärt darunter jeden Schritt nach diesen Regeln.\n\nUnter Aufgaben rechnest du selbst.",
   "menuTilt": "Neigen bewegt die Perlen",
-  "menuSound": "Ton"
+  "menuSound": "Ton",
+  "menuLanguage": "Sprache",
+  "languageSystem": "Wie auf dem Gerät",
+  "backToTutorial": "Zurück zur Anleitung"
 }

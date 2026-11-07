@@ -83,5 +83,8 @@
   "tutTryTitle": "Ahora tú",
   "tutTryBody": "Toca la calculadora y escribe tu propio ejemplo: el ábaco lo resuelve y debajo explica cada paso con estas reglas.\n\nEn Ejercicios resuelves tú los ejemplos.",
   "menuTilt": "Inclinar mueve las cuentas",
-  "menuSound": "Sonido"
+  "menuSound": "Sonido",
+  "menuLanguage": "Idioma",
+  "languageSystem": "Como en el dispositivo",
+  "backToTutorial": "Volver al tutorial"
 }
