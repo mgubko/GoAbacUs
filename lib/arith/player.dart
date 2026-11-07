@@ -18,9 +18,10 @@ class ExamplePlayer {
 
   /// Finger speed along the wire, m/s: a calm, clearly visible push.
   static const double speed = 0.32;
-  static const double _beforeTerm = 0.9;
-  static const double _beforeStep = 0.55;
-  static const double _beforeMove = 0.3;
+  // Pauses leave time to read the comment on the move that comes next.
+  static const double _beforeTerm = 1.4;
+  static const double _beforeStep = 1.1;
+  static const double _beforeMove = 1.0;
   static const double _maxHold = 1.0;
 
   _Phase _phase = _Phase.clearing;
@@ -48,6 +49,9 @@ class ExamplePlayer {
       : done
       ? example.terms.length - 1
       : steps[_step].term;
+
+  /// Index of the move within [step] shown (or about to be made) now.
+  int get move => _move;
 
   /// Row the finger works on now.
   int? get row => step?.moves[_move].row;
@@ -179,7 +183,7 @@ class ExamplePlayer {
       for (final m in s.moves) {
         t += _beforeMove + m.count.abs() * 0.02 / speed + 0.3;
       }
-      t += _beforeTerm;
+      t += _beforeTerm + _beforeStep;
     }
     return math.max(t, 1) + 5;
   }

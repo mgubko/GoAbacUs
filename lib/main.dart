@@ -7,6 +7,7 @@ import 'l10n/app_localizations.dart';
 import 'ui/abacus_view.dart';
 import 'ui/example_panel.dart';
 import 'ui/exercise_ui.dart';
+import 'ui/tutorial.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -80,6 +81,20 @@ class _AbacusScreenState extends State<AbacusScreen> {
     if (e != null) _controller.play(e);
   }
 
+  Future<void> _menu(_MenuItem item) async {
+    switch (item) {
+      case _MenuItem.tutorial:
+        final e = await showTutorial(context);
+        if (e == null) return;
+        _controller.stopExercises();
+        _controller.play(e);
+      case _MenuItem.tilt:
+        setState(() => _controller.tiltEnabled = !_controller.tiltEnabled);
+      case _MenuItem.sound:
+        setState(() => _controller.sound.enabled = !_controller.sound.enabled);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context);
@@ -138,41 +153,37 @@ class _AbacusScreenState extends State<AbacusScreen> {
                       onPressed: _enterExample,
                     ),
                     IconButton(
-                      tooltip: _controller.tiltEnabled ? t.tiltOn : t.tiltOff,
-                      color: ink,
-                      iconSize: 30,
-                      icon: Icon(
-                        _controller.tiltEnabled
-                            ? Icons.screen_rotation
-                            : Icons.screen_lock_rotation,
-                      ),
-                      onPressed: () => setState(
-                        () =>
-                            _controller.tiltEnabled = !_controller.tiltEnabled,
-                      ),
-                    ),
-                    IconButton(
-                      tooltip: _controller.sound.enabled
-                          ? t.soundOn
-                          : t.soundOff,
-                      color: ink,
-                      iconSize: 30,
-                      icon: Icon(
-                        _controller.sound.enabled
-                            ? Icons.volume_up
-                            : Icons.volume_off,
-                      ),
-                      onPressed: () => setState(
-                        () => _controller.sound.enabled =
-                            !_controller.sound.enabled,
-                      ),
-                    ),
-                    IconButton(
                       tooltip: t.resetTooltip,
                       color: ink,
                       iconSize: 30,
                       icon: const Icon(Icons.restart_alt),
                       onPressed: _controller.clear,
+                    ),
+                    PopupMenuButton<_MenuItem>(
+                      iconColor: ink,
+                      iconSize: 30,
+                      color: const Color(0xFFF6EEE0),
+                      onSelected: _menu,
+                      itemBuilder: (context) => [
+                        PopupMenuItem(
+                          value: _MenuItem.tutorial,
+                          child: ListTile(
+                            leading: const Icon(Icons.menu_book_outlined),
+                            title: Text(t.menuTutorial),
+                          ),
+                        ),
+                        const PopupMenuDivider(),
+                        CheckedPopupMenuItem(
+                          value: _MenuItem.tilt,
+                          checked: _controller.tiltEnabled,
+                          child: Text(t.menuTilt),
+                        ),
+                        CheckedPopupMenuItem(
+                          value: _MenuItem.sound,
+                          checked: _controller.sound.enabled,
+                          child: Text(t.menuSound),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -200,3 +211,5 @@ class _AbacusScreenState extends State<AbacusScreen> {
     );
   }
 }
+
+enum _MenuItem { tutorial, tilt, sound }

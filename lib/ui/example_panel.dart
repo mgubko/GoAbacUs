@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../arith/explain.dart';
 import '../arith/plan.dart';
 import '../l10n/app_localizations.dart';
 import 'abacus_view.dart';
@@ -19,6 +20,27 @@ String placeName(AppLocalizations t, int place) => switch (place) {
   8 => t.place8,
   _ => t.place9,
 };
+
+/// What move [i] of [step] does and by which tutorial rule.
+String moveNote(AppLocalizations t, DigitStep step, int i) {
+  final m = step.moves[i];
+  final place = placeName(t, m.row);
+  final count = m.count.abs();
+  final friend = 10 - step.digit;
+  return switch (roleOf(step, i)) {
+    MoveRole.direct => switch (ruleOf(step)) {
+      Rule.set => t.noteSet(place, count),
+      Rule.subFits => t.noteSubFits(place, count),
+      _ => t.noteAddFits(place, count),
+    },
+    MoveRole.carryOne => t.noteCarryOne(place, step.digit),
+    MoveRole.carryThroughNine => t.noteCarryNine(place),
+    MoveRole.takeFriend => t.noteTakeFriend(place, step.digit, friend),
+    MoveRole.borrowOne => t.noteBorrowOne(place, step.digit),
+    MoveRole.borrowThroughZero => t.noteBorrowZero(place),
+    MoveRole.giveFriend => t.noteGiveFriend(place, step.digit, friend),
+  };
+}
 
 /// The strip under the number: what was written down from the child's
 /// moves, or the example being shown with a caption for every digit.
@@ -86,13 +108,7 @@ class ExamplePanel extends StatelessWidget {
                   ],
                 ),
               );
-              if (step.complement != null) {
-                hint = Text(
-                  step.add
-                      ? t.carryHint(step.complement!)
-                      : t.borrowHint(step.complement!),
-                );
-              }
+              hint = Text(moveNote(t, step, player.move));
             }
           }
         } else {
@@ -145,7 +161,7 @@ class ExamplePanel extends StatelessWidget {
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      child: SizedBox(height: 18, child: hint),
+                      child: SizedBox(height: 36, child: hint),
                     ),
                   ],
                 ),

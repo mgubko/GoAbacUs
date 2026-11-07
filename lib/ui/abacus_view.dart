@@ -116,7 +116,7 @@ class AbacusController extends ChangeNotifier {
   void tick(double elapsed) {
     _clock += Duration(microseconds: (elapsed * 1e6).round());
     final p = player;
-    final before = p == null ? null : (p.term, p.step, p.done);
+    final before = p == null ? null : (p.term, p.step, p.done, p.move);
     if (playing) {
       // The board lies still while an example is shown.
       physics.gravityAlong = 0;
@@ -141,7 +141,7 @@ class AbacusController extends ChangeNotifier {
     final ex = exercise;
     if (p != null) {
       if (p.done && !before!.$3 && ex == null) tape.setExample(p.example);
-      if ((p.term, p.step, p.done) != before) changes.value++;
+      if ((p.term, p.step, p.done, p.move) != before) changes.value++;
       if (p.done &&
           before!.$3 &&
           ex == null &&

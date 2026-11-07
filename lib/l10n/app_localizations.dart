@@ -218,18 +218,6 @@ abstract class AppLocalizations {
   /// **'Take away {number}'**
   String stepSub(String number);
 
-  /// No description provided for @carryHint.
-  ///
-  /// In en, this message translates to:
-  /// **'No room: one bead in the next row, {count} back here'**
-  String carryHint(int count);
-
-  /// No description provided for @borrowHint.
-  ///
-  /// In en, this message translates to:
-  /// **'Not enough: one bead off the next row, {count} added here'**
-  String borrowHint(int count);
-
   /// No description provided for @place0.
   ///
   /// In en, this message translates to:
@@ -409,6 +397,216 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Work it out on the abacus'**
   String get solveHint;
+
+  /// No description provided for @menuTutorial.
+  ///
+  /// In en, this message translates to:
+  /// **'How to count on the abacus'**
+  String get menuTutorial;
+
+  /// No description provided for @tutorialTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to count on the abacus'**
+  String get tutorialTitle;
+
+  /// No description provided for @tutorialShow.
+  ///
+  /// In en, this message translates to:
+  /// **'Show on the abacus: {example}'**
+  String tutorialShow(String example);
+
+  /// No description provided for @tutorialBack.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get tutorialBack;
+
+  /// No description provided for @tutorialDone.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it!'**
+  String get tutorialDone;
+
+  /// No description provided for @tutorialPage.
+  ///
+  /// In en, this message translates to:
+  /// **'{n} of {total}'**
+  String tutorialPage(int n, int total);
+
+  /// No description provided for @noteSet.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: push in {count, plural, =1{1 bead} other{{count} beads}}'**
+  String noteSet(String place, int count);
+
+  /// No description provided for @noteAddFits.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule 1. {place}: there is room, push in {count, plural, =1{1 bead} other{{count} beads}}'**
+  String noteAddFits(String place, int count);
+
+  /// No description provided for @noteSubFits.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule 3. {place}: enough beads, push back {count, plural, =1{1 bead} other{{count} beads}}'**
+  String noteSubFits(String place, int count);
+
+  /// No description provided for @noteCarryOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule 2: no room for {digit}. {place}: + 1 (carry)'**
+  String noteCarryOne(String place, int digit);
+
+  /// No description provided for @noteCarryNine.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: already 9, and + 1 = + 10 − 9: push back 9'**
+  String noteCarryNine(String place);
+
+  /// No description provided for @noteTakeFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: push back {friend}, since + {digit} = + 10 − {friend}'**
+  String noteTakeFriend(String place, int digit, int friend);
+
+  /// No description provided for @noteBorrowOne.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule 4: not enough beads for {digit}. {place}: − 1 (borrow)'**
+  String noteBorrowOne(String place, int digit);
+
+  /// No description provided for @noteBorrowZero.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: 0 here, and − 1 = − 10 + 9: push in 9'**
+  String noteBorrowZero(String place);
+
+  /// No description provided for @noteGiveFriend.
+  ///
+  /// In en, this message translates to:
+  /// **'{place}: push in {friend}, since − {digit} = − 10 + {friend}'**
+  String noteGiveFriend(String place, int digit, int friend);
+
+  /// No description provided for @tutWiresTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How the abacus works'**
+  String get tutWiresTitle;
+
+  /// No description provided for @tutWiresBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Each wire is a place. The bottom one is the ones, above it the tens, then the hundreds, and so on.\n\nThere are 10 beads on a wire. The beads we count are pushed to the left; the free ones stay on the right. The two black beads in the middle are the fifth and the sixth: they show 5 at a glance, no need to count again.'**
+  String get tutWiresBody;
+
+  /// No description provided for @tutSetTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How to set a number'**
+  String get tutSetTitle;
+
+  /// No description provided for @tutSetBody.
+  ///
+  /// In en, this message translates to:
+  /// **'A number is set from its biggest place, left to right. 254 is 2 hundreds, 5 tens and 4 ones: push in 2 beads on the hundreds wire, 5 on the tens wire and 4 on the ones wire.\n\nA 0 in the number means: leave that wire alone.'**
+  String get tutSetBody;
+
+  /// No description provided for @tutAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule 1. Adding'**
+  String get tutAddTitle;
+
+  /// No description provided for @tutAddBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We add from the biggest place too. A wire holds at most 9 beads. If there are still no more than 9 after adding, there is room: just push in as many beads as the digit says.\n\n23 + 45: push in 4 on the tens, 5 on the ones. That makes 68.'**
+  String get tutAddBody;
+
+  /// No description provided for @tutFriendsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pairs that make 10'**
+  String get tutFriendsTitle;
+
+  /// No description provided for @tutFriendsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Remember the pairs that together make 10:\n1 and 9,  2 and 8,  3 and 7,  4 and 6,  5 and 5.\n\nThe abacus shows it at once: push in 7 beads and 3 are left on the right. We need these pairs to carry and to borrow.'**
+  String get tutFriendsBody;
+
+  /// No description provided for @tutCarryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule 2. Carrying a ten'**
+  String get tutCarryTitle;
+
+  /// No description provided for @tutCarryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'10 beads on one wire are 1 bead on the wire above. If there is no room, push in 1 bead on the wire above and push back the digit\'s partner to 10 here:\n+ 7 = + 10 − 3.\n\n5 + 7: the ones already have 5, so 7 won\'t fit. Push in 1 ten and push back 3 on the ones. That makes 12.'**
+  String get tutCarryBody;
+
+  /// No description provided for @tutSubTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule 3. Taking away'**
+  String get tutSubTitle;
+
+  /// No description provided for @tutSubBody.
+  ///
+  /// In en, this message translates to:
+  /// **'We take away from the biggest place too. If there are enough beads pushed in, push back as many as the digit says.\n\n58 − 26: push back 2 on the tens and 6 on the ones. 32 are left.'**
+  String get tutSubBody;
+
+  /// No description provided for @tutBorrowTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Rule 4. Borrowing a ten'**
+  String get tutBorrowTitle;
+
+  /// No description provided for @tutBorrowBody.
+  ///
+  /// In en, this message translates to:
+  /// **'If fewer beads are pushed in than you need to take away, borrow a ten: push back 1 bead on the wire above and push in the digit\'s partner to 10 here:\n− 7 = − 10 + 3.\n\n12 − 7: the ones have only 2. Push back 1 ten and push in 3 on the ones. 5 are left.'**
+  String get tutBorrowBody;
+
+  /// No description provided for @tutChainTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Past 9 and past 0'**
+  String get tutChainTitle;
+
+  /// No description provided for @tutChainBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Sometimes the wire above has no room either: it already has 9. Then rule 2 works for it too: + 1 = + 10 − 9. The one goes further up, and 9 are pushed back here.\n\n99 + 1: hundreds + 1, tens − 9, ones − 9. That makes 100.\nTaking away works the same way, past 0: 100 − 1 = 99.'**
+  String get tutChainBody;
+
+  /// No description provided for @tutTryTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Your turn'**
+  String get tutTryTitle;
+
+  /// No description provided for @tutTryBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap the calculator and type your own example: the abacus will solve it and explain every step below by these rules.\n\nIn Exercises you solve examples yourself.'**
+  String get tutTryBody;
+
+  /// No description provided for @menuTilt.
+  ///
+  /// In en, this message translates to:
+  /// **'Tilt moves the beads'**
+  String get menuTilt;
+
+  /// No description provided for @menuSound.
+  ///
+  /// In en, this message translates to:
+  /// **'Sound'**
+  String get menuSound;
 }
 
 class _AppLocalizationsDelegate

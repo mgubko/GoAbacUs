@@ -19,8 +19,6 @@
   "stepSet": "Set {number}",
   "stepAdd": "Add {number}",
   "stepSub": "Take away {number}",
-  "carryHint": "No room: one bead in the next row, {count} back here",
-  "borrowHint": "Not enough: one bead off the next row, {count} added here",
   "place0": "Ones",
   "place1": "Tens",
   "place2": "Hundreds",
@@ -49,20 +47,6 @@
     "placeholders": {
       "number": {
         "type": "String"
-      }
-    }
-  },
-  "@carryHint": {
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
-  "@borrowHint": {
-    "placeholders": {
-      "count": {
-        "type": "int"
       }
     }
   },
@@ -106,5 +90,147 @@
         "type": "String"
       }
     }
-  }
+  },
+  "menuTutorial": "How to count on the abacus",
+  "tutorialTitle": "How to count on the abacus",
+  "tutorialShow": "Show on the abacus: {example}",
+  "@tutorialShow": {
+    "placeholders": {
+      "example": {
+        "type": "String"
+      }
+    }
+  },
+  "tutorialBack": "Back",
+  "tutorialDone": "Got it!",
+  "tutorialPage": "{n} of {total}",
+  "@tutorialPage": {
+    "placeholders": {
+      "n": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "noteSet": "{place}: push in {count, plural, =1{1 bead} other{{count} beads}}",
+  "@noteSet": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noteAddFits": "Rule 1. {place}: there is room, push in {count, plural, =1{1 bead} other{{count} beads}}",
+  "@noteAddFits": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noteSubFits": "Rule 3. {place}: enough beads, push back {count, plural, =1{1 bead} other{{count} beads}}",
+  "@noteSubFits": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noteCarryOne": "Rule 2: no room for {digit}. {place}: + 1 (carry)",
+  "@noteCarryOne": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "digit": {
+        "type": "int"
+      }
+    }
+  },
+  "noteCarryNine": "{place}: already 9, and + 1 = + 10 − 9: push back 9",
+  "@noteCarryNine": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "noteTakeFriend": "{place}: push back {friend}, since + {digit} = + 10 − {friend}",
+  "@noteTakeFriend": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "digit": {
+        "type": "int"
+      },
+      "friend": {
+        "type": "int"
+      }
+    }
+  },
+  "noteBorrowOne": "Rule 4: not enough beads for {digit}. {place}: − 1 (borrow)",
+  "@noteBorrowOne": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "digit": {
+        "type": "int"
+      }
+    }
+  },
+  "noteBorrowZero": "{place}: 0 here, and − 1 = − 10 + 9: push in 9",
+  "@noteBorrowZero": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "noteGiveFriend": "{place}: push in {friend}, since − {digit} = − 10 + {friend}",
+  "@noteGiveFriend": {
+    "placeholders": {
+      "place": {
+        "type": "String"
+      },
+      "digit": {
+        "type": "int"
+      },
+      "friend": {
+        "type": "int"
+      }
+    }
+  },
+  "tutWiresTitle": "How the abacus works",
+  "tutWiresBody": "Each wire is a place. The bottom one is the ones, above it the tens, then the hundreds, and so on.\n\nThere are 10 beads on a wire. The beads we count are pushed to the left; the free ones stay on the right. The two black beads in the middle are the fifth and the sixth: they show 5 at a glance, no need to count again.",
+  "tutSetTitle": "How to set a number",
+  "tutSetBody": "A number is set from its biggest place, left to right. 254 is 2 hundreds, 5 tens and 4 ones: push in 2 beads on the hundreds wire, 5 on the tens wire and 4 on the ones wire.\n\nA 0 in the number means: leave that wire alone.",
+  "tutAddTitle": "Rule 1. Adding",
+  "tutAddBody": "We add from the biggest place too. A wire holds at most 9 beads. If there are still no more than 9 after adding, there is room: just push in as many beads as the digit says.\n\n23 + 45: push in 4 on the tens, 5 on the ones. That makes 68.",
+  "tutFriendsTitle": "Pairs that make 10",
+  "tutFriendsBody": "Remember the pairs that together make 10:\n1 and 9,  2 and 8,  3 and 7,  4 and 6,  5 and 5.\n\nThe abacus shows it at once: push in 7 beads and 3 are left on the right. We need these pairs to carry and to borrow.",
+  "tutCarryTitle": "Rule 2. Carrying a ten",
+  "tutCarryBody": "10 beads on one wire are 1 bead on the wire above. If there is no room, push in 1 bead on the wire above and push back the digit's partner to 10 here:\n+ 7 = + 10 − 3.\n\n5 + 7: the ones already have 5, so 7 won't fit. Push in 1 ten and push back 3 on the ones. That makes 12.",
+  "tutSubTitle": "Rule 3. Taking away",
+  "tutSubBody": "We take away from the biggest place too. If there are enough beads pushed in, push back as many as the digit says.\n\n58 − 26: push back 2 on the tens and 6 on the ones. 32 are left.",
+  "tutBorrowTitle": "Rule 4. Borrowing a ten",
+  "tutBorrowBody": "If fewer beads are pushed in than you need to take away, borrow a ten: push back 1 bead on the wire above and push in the digit's partner to 10 here:\n− 7 = − 10 + 3.\n\n12 − 7: the ones have only 2. Push back 1 ten and push in 3 on the ones. 5 are left.",
+  "tutChainTitle": "Past 9 and past 0",
+  "tutChainBody": "Sometimes the wire above has no room either: it already has 9. Then rule 2 works for it too: + 1 = + 10 − 9. The one goes further up, and 9 are pushed back here.\n\n99 + 1: hundreds + 1, tens − 9, ones − 9. That makes 100.\nTaking away works the same way, past 0: 100 − 1 = 99.",
+  "tutTryTitle": "Your turn",
+  "tutTryBody": "Tap the calculator and type your own example: the abacus will solve it and explain every step below by these rules.\n\nIn Exercises you solve examples yourself.",
+  "menuTilt": "Tilt moves the beads",
+  "menuSound": "Sound"
 }
