@@ -83,5 +83,8 @@
   "tutTryTitle": "À toi",
   "tutTryBody": "Touche la calculatrice et tape ton propre exemple : le boulier le résout et explique chaque étape en dessous avec ces règles.\n\nDans Exercices, c’est toi qui calcules.",
   "menuTilt": "L’inclinaison bouge les boules",
-  "menuSound": "Son"
+  "menuSound": "Son",
+  "menuLanguage": "Langue",
+  "languageSystem": "Comme sur l’appareil",
+  "backToTutorial": "Retour au tutoriel"
 }

@@ -3,16 +3,25 @@ import 'package:flutter/material.dart';
 import '../arith/plan.dart';
 import '../l10n/app_localizations.dart';
 import 'example_panel.dart' show placeName;
+import 'language.dart';
 
 const _ink = Color(0xFF402A1A);
 const _accent = Color(0xFFB5452B);
 const _paper = Color(0xFFF6EEE0);
 
-/// The rules of counting on the abacus, page by page. Returns an example to
-/// show on the big abacus when the child taps "Show", otherwise null.
-Future<Example?> showTutorial(BuildContext context) {
-  return Navigator.of(context).push<Example>(
-    MaterialPageRoute(builder: (context) => const TutorialScreen()),
+/// How the tutorial was left: the page it was on and, when the child tapped
+/// "Show", the example to play on the big abacus.
+class TutorialResult {
+  const TutorialResult(this.page, this.example);
+  final int page;
+  final Example? example;
+}
+
+/// The rules of counting on the abacus, page by page, opened at [page].
+/// Null when the child read it to the end and tapped "Got it".
+Future<TutorialResult?> showTutorial(BuildContext context, {int page = 0}) {
+  return Navigator.of(context).push<TutorialResult>(
+    MaterialPageRoute(builder: (context) => TutorialScreen(initialPage: page)),
   );
 }
 
@@ -83,15 +92,16 @@ List<_Page> _pages(AppLocalizations t) => [
 ];
 
 class TutorialScreen extends StatefulWidget {
-  const TutorialScreen({super.key});
+  const TutorialScreen({super.key, this.initialPage = 0});
+  final int initialPage;
 
   @override
   State<TutorialScreen> createState() => _TutorialScreenState();
 }
 
 class _TutorialScreenState extends State<TutorialScreen> {
-  final _controller = PageController();
-  var _page = 0;
+  late final _controller = PageController(initialPage: widget.initialPage);
+  late var _page = widget.initialPage;
 
   @override
   void dispose() {
@@ -110,55 +120,69 @@ class _TutorialScreenState extends State<TutorialScreen> {
     final t = AppLocalizations.of(context);
     final pages = _pages(t);
     final last = _page == pages.length - 1;
-    return Scaffold(
-      backgroundColor: _paper,
-      appBar: AppBar(
+    return PopScope<TutorialResult>(
+      canPop: false,
+      // The back arrow and the system back keep the page for next time.
+      onPopInvokedWithResult: (didPop, _) {
+        if (!didPop) Navigator.of(context).pop(TutorialResult(_page, null));
+      },
+      child: Scaffold(
         backgroundColor: _paper,
-        foregroundColor: _ink,
-        title: Text(t.tutorialTitle),
-      ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: PageView.builder(
-                controller: _controller,
-                itemCount: pages.length,
-                onPageChanged: (p) => setState(() => _page = p),
-                itemBuilder: (context, i) => _PageView(page: pages[i]),
+        appBar: AppBar(
+          backgroundColor: _paper,
+          foregroundColor: _ink,
+          title: Text(t.tutorialTitle),
+          actions: const [LanguageButton()],
+        ),
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: PageView.builder(
+                  controller: _controller,
+                  itemCount: pages.length,
+                  onPageChanged: (p) => setState(() => _page = p),
+                  itemBuilder: (context, i) => _PageView(
+                    page: pages[i],
+                    onShow: (e) =>
+                        Navigator.of(context).pop(TutorialResult(i, e)),
+                  ),
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
-              child: Row(
-                children: [
-                  TextButton.icon(
-                    style: TextButton.styleFrom(foregroundColor: _ink),
-                    onPressed: _page == 0 ? null : () => _go(_page - 1),
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    label: Text(t.tutorialBack),
-                  ),
-                  Expanded(
-                    child: Text(
-                      t.tutorialPage(_page + 1, pages.length),
-                      textAlign: TextAlign.center,
-                      style: TextStyle(color: _ink.withValues(alpha: 0.6)),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 12),
+                child: Row(
+                  children: [
+                    TextButton.icon(
+                      style: TextButton.styleFrom(foregroundColor: _ink),
+                      onPressed: _page == 0 ? null : () => _go(_page - 1),
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      label: Text(t.tutorialBack),
                     ),
-                  ),
-                  FilledButton.icon(
-                    style: FilledButton.styleFrom(backgroundColor: _accent),
-                    onPressed: last
-                        ? () => Navigator.of(context).pop()
-                        : () => _go(_page + 1),
-                    icon: Icon(
-                      last ? Icons.check_rounded : Icons.arrow_forward_rounded,
+                    Expanded(
+                      child: Text(
+                        t.tutorialPage(_page + 1, pages.length),
+                        textAlign: TextAlign.center,
+                        style: TextStyle(color: _ink.withValues(alpha: 0.6)),
+                      ),
                     ),
-                    label: Text(last ? t.tutorialDone : t.nextButton),
-                  ),
-                ],
+                    FilledButton.icon(
+                      style: FilledButton.styleFrom(backgroundColor: _accent),
+                      onPressed: last
+                          ? () => Navigator.of(context).pop()
+                          : () => _go(_page + 1),
+                      icon: Icon(
+                        last
+                            ? Icons.check_rounded
+                            : Icons.arrow_forward_rounded,
+                      ),
+                      label: Text(last ? t.tutorialDone : t.nextButton),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -166,8 +190,9 @@ class _TutorialScreenState extends State<TutorialScreen> {
 }
 
 class _PageView extends StatelessWidget {
-  const _PageView({required this.page});
+  const _PageView({required this.page, required this.onShow});
   final _Page page;
+  final ValueChanged<Example> onShow;
 
   @override
   Widget build(BuildContext context) {
@@ -226,7 +251,7 @@ class _PageView extends StatelessWidget {
                         vertical: 14,
                       ),
                     ),
-                    onPressed: () => Navigator.of(context).pop(example),
+                    onPressed: () => onShow(example),
                     icon: const Icon(Icons.play_arrow_rounded),
                     label: Text(t.tutorialShow(example.format())),
                   ),

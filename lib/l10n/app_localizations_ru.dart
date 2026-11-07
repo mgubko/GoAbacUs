@@ -323,4 +323,13 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get menuSound => 'Звук';
+
+  @override
+  String get menuLanguage => 'Язык';
+
+  @override
+  String get languageSystem => 'Как в системе';
+
+  @override
+  String get backToTutorial => 'Вернуться к обучению';
 }

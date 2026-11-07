@@ -607,6 +607,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Sound'**
   String get menuSound;
+
+  /// No description provided for @menuLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get menuLanguage;
+
+  /// No description provided for @languageSystem.
+  ///
+  /// In en, this message translates to:
+  /// **'As on the device'**
+  String get languageSystem;
+
+  /// No description provided for @backToTutorial.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to the tutorial'**
+  String get backToTutorial;
 }
 
 class _AppLocalizationsDelegate
