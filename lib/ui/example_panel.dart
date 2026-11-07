@@ -56,6 +56,10 @@ class ExamplePanel extends StatelessWidget {
   /// from.
   final VoidCallback? onBackToTutorial;
 
+  /// Height of the panel with a one-line example: the room kept for it
+  /// above the abacus. More lines are drawn over the abacus area.
+  static const slotHeight = 30.0 + 20 + 36 + 4;
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(

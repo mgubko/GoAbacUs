@@ -140,6 +140,10 @@ class ExercisePanel extends StatelessWidget {
   const ExercisePanel({super.key, required this.controller});
   final AbacusController controller;
 
+  /// Height with a one-line task: the room kept for it above the abacus.
+  /// A task that wraps is drawn over the abacus area.
+  static const slotHeight = 48.0 + 48 + 6 + 20 + 22 + 4;
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<int>(
@@ -157,87 +161,97 @@ class ExercisePanel extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                children: [
-                  Text(
-                    t.taskNumber(e.number),
-                    style: TextStyle(
-                      fontSize: 15,
-                      color: _ink.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  const Icon(Icons.star_rounded, color: _gold, size: 22),
-                  Text(
-                    ' ${e.solved}',
-                    style: const TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w700,
-                      color: _ink,
-                    ),
-                  ),
-                  const Spacer(),
-                  IconButton(
-                    tooltip: t.exitTooltip,
-                    color: _ink,
-                    icon: const Icon(Icons.close_rounded),
-                    onPressed: controller.stopExercises,
-                  ),
-                ],
-              ),
-              Row(
-                children: [
-                  Expanded(
-                    // Wraps between terms instead of shrinking.
-                    child: Text(
-                      '${e.task.format()} =\u00A0${solving ? '?' : formatNumber(e.answer)}',
-                      style: const TextStyle(
-                        fontSize: 34,
-                        fontWeight: FontWeight.w800,
-                        color: _ink,
-                        fontFeatures: [FontFeature.tabularFigures()],
-                      ),
-                    ),
-                  ),
-                  if (solving)
-                    FilledButton(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: _accent,
-                        minimumSize: const Size(120, 48),
-                        textStyle: const TextStyle(fontSize: 18),
-                      ),
-                      onPressed: controller.submitExercise,
-                      child: Text(t.doneButton),
-                    ),
-                ],
-              ),
-              const SizedBox(height: 6),
-              Row(
-                children: [
-                  Expanded(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(4),
-                      child: LinearProgressIndicator(
-                        value: solving ? left.clamp(0.0, 1.0) : 0,
-                        minHeight: 8,
-                        backgroundColor: _ink.withValues(alpha: 0.12),
-                        color: secs <= 10 ? _accent : const Color(0xFF7A9A4A),
-                      ),
-                    ),
-                  ),
-                  SizedBox(
-                    width: 44,
-                    child: Text(
-                      solving ? '$secs' : '',
-                      textAlign: TextAlign.right,
+              SizedBox(
+                height: 48,
+                child: Row(
+                  children: [
+                    Text(
+                      t.taskNumber(e.number),
                       style: TextStyle(
                         fontSize: 15,
-                        fontWeight: FontWeight.w600,
-                        color: secs <= 10 ? _accent : _ink,
+                        color: _ink.withValues(alpha: 0.7),
                       ),
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 12),
+                    const Icon(Icons.star_rounded, color: _gold, size: 22),
+                    Text(
+                      ' ${e.solved}',
+                      style: const TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.w700,
+                        color: _ink,
+                      ),
+                    ),
+                    const Spacer(),
+                    IconButton(
+                      tooltip: t.exitTooltip,
+                      color: _ink,
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: controller.stopExercises,
+                    ),
+                  ],
+                ),
+              ),
+              ConstrainedBox(
+                constraints: const BoxConstraints(minHeight: 48),
+                child: Row(
+                  children: [
+                    Expanded(
+                      // Wraps between terms instead of shrinking.
+                      child: Text(
+                        '${e.task.format()} =\u00A0${solving ? '?' : formatNumber(e.answer)}',
+                        style: const TextStyle(
+                          fontSize: 34,
+                          height: 1.25,
+                          fontWeight: FontWeight.w800,
+                          color: _ink,
+                          fontFeatures: [FontFeature.tabularFigures()],
+                        ),
+                      ),
+                    ),
+                    if (solving)
+                      FilledButton(
+                        style: FilledButton.styleFrom(
+                          backgroundColor: _accent,
+                          minimumSize: const Size(120, 48),
+                          textStyle: const TextStyle(fontSize: 18),
+                        ),
+                        onPressed: controller.submitExercise,
+                        child: Text(t.doneButton),
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 6),
+              SizedBox(
+                height: 20,
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(4),
+                        child: LinearProgressIndicator(
+                          value: solving ? left.clamp(0.0, 1.0) : 0,
+                          minHeight: 8,
+                          backgroundColor: _ink.withValues(alpha: 0.12),
+                          color: secs <= 10 ? _accent : const Color(0xFF7A9A4A),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 44,
+                      child: Text(
+                        solving ? '$secs' : '',
+                        textAlign: TextAlign.right,
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: secs <= 10 ? _accent : _ink,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               SizedBox(
                 height: 22,
