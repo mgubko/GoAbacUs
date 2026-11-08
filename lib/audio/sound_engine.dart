@@ -228,7 +228,7 @@ class SoundEngine {
   void motion(double slide, double rattle) {
     if (!_ready) return;
     final on = enabled && !_paused;
-    _slide?.set(on ? masterVolume * 0.7 * slide : 0);
+    _slide?.set(on ? masterVolume * 0.47 * slide : 0);
     _rattle?.set(on ? masterVolume * 0.8 * rattle : 0);
   }
 
