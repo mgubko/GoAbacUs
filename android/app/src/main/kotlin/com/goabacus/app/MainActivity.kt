@@ -1,4 +1,4 @@
-package io.github.mgubko.goabacus
+package com.goabacus.app
 
 import android.os.Build
 import android.view.Surface
