@@ -63,9 +63,17 @@ Code is released under the [MIT License](LICENSE).
 Assets: bead and wood textures (`assets/images/`) and the app icon were generated for this
 project; `success.wav` and `fail.wav` are synthesized by `tool/gen_cues.py`.
 The bead click, slide and spin sounds (`assets/sounds/bone_*`, `wood_*`, `slide`, `rattle`,
-`spin_*`) are cut from a third-party recording of a wooden abacus; their license is
-**not yet cleared** and they will be replaced with freely licensed or synthesized sounds
-before a store release.
+`spin_*`) are cut by `tool/cut_sounds.py` from a recording of a wooden abacus,
+the YouTube video [0fO-HlM-gLU](https://www.youtube.com/watch?v=0fO-HlM-gLU) by
+**SV DATA** ([youtube.com/@svdataSound](https://www.youtube.com/@svdataSound)), published as
+“Sounds, music, videos, no copyright.” Thank you, SV DATA!
+
+## Credits
+
+- Abacus sounds: [SV DATA](https://www.youtube.com/@svdataSound), video
+  [0fO-HlM-gLU](https://www.youtube.com/watch?v=0fO-HlM-gLU).
+- Built with [Flutter](https://flutter.dev) and the packages listed in `pubspec.yaml`
+  (`sensors_plus`, `audioplayers`, `vibration`, `shared_preferences`, `intl`).
 
 ---
 
@@ -80,7 +88,9 @@ before a store release.
 - Физика (`lib/physics/abacus_physics.dart`, единицы СИ): инерция, трение покоя и скольжения,
   упругие удары кость–кость и кость–рамка, палец как пружина с ограниченной силой
   (чем больше костяшек толкаешь, тем они тяжелее и медленнее), гравитация от наклона.
-- Звуки ударов вырезаны из записи настоящих деревянных счётов: `tool/cut_sounds.py`.
+- Звуки ударов вырезаны из записи настоящих деревянных счётов (видео
+  [0fO-HlM-gLU](https://www.youtube.com/watch?v=0fO-HlM-gLU) канала
+  [SV DATA](https://www.youtube.com/@svdataSound), «no copyright»): `tool/cut_sounds.py`.
   Громкость зависит от скорости удара, звук только при новом ударе.
 - Вибрация при ударе о рамку, сила по импульсу движущейся группы.
 - Вертикальный взмах пальцем по рядам крутит костяшки на спицах: звук из той же записи

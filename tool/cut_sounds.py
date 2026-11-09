@@ -7,7 +7,9 @@ Writes assets/sounds/bone_*.wav (bead hits bead), wood_*.wav (beads hit
 the frame), and two seamless loops: slide.wav (one bead sliding on the wire)
 and rattle.wav (a group sliding together, lightly knocking), and spin_*.wav
 (beads spun round the wire by a vertical swipe). The onset times below were picked from the reference recording
-Mikhail supplied (2026-11-06): isolated clicks with no other hit within
+Mikhail supplied (2026-11-06): YouTube video 0fO-HlM-gLU by the channel
+SV DATA (https://www.youtube.com/@svdataSound, "Sounds, music, videos, no
+copyright"), credited in README.md. Picked: isolated clicks with no other hit within
 ~140 ms. The first seconds of that recording hold the heavier group hits,
 used for the frame.
 """
