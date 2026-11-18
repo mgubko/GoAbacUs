@@ -130,7 +130,10 @@ def tts(text, lang):
         },
     }
     r = call(TTS_MODEL, body)
-    part = r["candidates"][0]["content"]["parts"][0]["inlineData"]
+    try:
+        part = r["candidates"][0]["content"]["parts"][0]["inlineData"]
+    except (KeyError, IndexError) as e:
+        raise RuntimeError(f"no audio in the answer: {e}") from e
     mime = part["mimeType"]
     rate = int(re.search(r"rate=(\d+)", mime).group(1)) if "rate=" in mime else 24000
     return base64.b64decode(part["data"]), rate
@@ -159,6 +162,26 @@ def stt(path, lang, number):
     return "".join(
         p.get("text", "") for p in r["candidates"][0]["content"]["parts"]
     ).strip()
+
+
+def confirms(path, lang, text):
+    """Short fragments ("по", "Zehner") are often misheard without context:
+    ask whether the audio says exactly this."""
+    data = base64.b64encode(open(path, "rb").read()).decode()
+    body = {
+        "contents": [
+            {
+                "parts": [
+                    {"inline_data": {"mime_type": "audio/mp4", "data": data}},
+                    {"text": f"Does this {LANG_NAME[lang]} audio say exactly "
+                     f"\"{text}\" and nothing else? Answer yes or no."},
+                ]
+            }
+        ]
+    }
+    r = call(STT_MODEL, body)
+    t = "".join(p.get("text", "") for p in r["candidates"][0]["content"]["parts"])
+    return t.strip().lower().startswith("yes")
 
 
 def norm(s):
@@ -206,7 +229,9 @@ def record(text, lang, folder, check=True, tries=3):
         if not check:
             return text, os.path.basename(out), ""
         heard = stt(out, lang, text.isdigit())
-        if matches(text, heard):
+        if matches(text, heard) or (
+            len(text.split()) <= 3 and confirms(out, lang, text)
+        ):
             return text, os.path.basename(out), heard
     os.remove(out)
     raise RuntimeError(f"{lang} {text!r}: heard {heard!r}")
