@@ -26,7 +26,13 @@ class FamilyStore {
       Kid.fromJson(jsonDecode(s) as Map<String, Object?>),
   ];
 
-  Future<Kid> addKid(String name, int grade, String schoolLang, String homeLang) async {
+  Future<Kid> addKid(
+    String name,
+    int grade,
+    String schoolLang,
+    String homeLang, {
+    Set<String> aids = const {},
+  }) async {
     final ks = kids;
     final kid = Kid(
       id: ks.isEmpty ? 1 : ks.map((k) => k.id).reduce((a, b) => a > b ? a : b) + 1,
@@ -34,6 +40,7 @@ class FamilyStore {
       grade: grade,
       schoolLang: schoolLang,
       homeLang: homeLang,
+      aids: aids,
     );
     await _p.setStringList('kids', [
       for (final k in [...ks, kid]) jsonEncode(k.toJson()),

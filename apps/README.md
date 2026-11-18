@@ -35,6 +35,34 @@ Shared code:
 
 The child's app also has *Try with sample tasks* and a free abacus.
 
+## Teaching aids
+
+For every question the tutor picks a desk aid the family has (set in the
+parent's app: abacus, rods, twenty frame, 10×10 field, addition and times
+table films; fingers and the screen abacus always count) and a stage: hands
+on → look → imagine → in the head. The rules follow German primary-school
+methodology (PIKAS, Mahiko, Wartha & Schulz); the table is in
+`packages/tutor_tasks/lib/src/aids.dart`, the lesson in
+`apps/tutor/lib/lesson.dart`, the pictures in `apps/tutor/lib/aid_picture.dart`.
+
+## Voice
+
+The tutor's lines are recorded at build time and shipped as assets
+(`apps/tutor/assets/voice/<lang>/`, AAC, `index.json` maps clip text to file).
+Each line is cut at its numbers into fixed phrases; numbers 0–100 and the full
+hundreds are recorded once each. After changing a line in
+`lib/speech/lines.dart`:
+
+```
+cd apps/tutor
+VOICE_DUMP=1 flutter test test/voice_clips_test.dart   # updates tool/voice/clips.json
+GEMINI_API_KEY=... python3 tool/voice/make_voice.py      # records only new clips
+```
+
+The script checks every recording with speech recognition and retries. A test
+fails while `clips.json` is out of date; a clip without a recording is shown
+but not spoken.
+
 ## Build
 
 ```
@@ -49,5 +77,4 @@ debug APKs (artifacts `goabacus-scan-apk`, `goabacus-tutor-apk`).
 ## Not yet
 
 Cloud parsing for hard pages (needs the server proxy: the Gemini key never goes
-into the app), camera reading of a real abacus (`CameraAbacusSource`), recorded
-voice, Rechenrahmen 5+5 model, number houses/walls in the parser, store signing.
+into the app), camera reading of a real abacus and desk aids (`CameraAbacusSource`), Rechenrahmen 5+5 model, number houses/walls in the parser, store signing.

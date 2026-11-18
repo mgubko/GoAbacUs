@@ -5,10 +5,15 @@
 /// the child works one by one on the abacus.
 library;
 
+import 'dart:math' as math;
+
 enum Op {
   add('+'),
   sub('-'),
-  mul('*');
+  mul('*'),
+
+  /// Division, possibly with a remainder: 17 : 5 = 3 R 2.
+  div(':');
 
   const Op(this.symbol);
   final String symbol;
@@ -18,12 +23,14 @@ enum Op {
     Op.add => '+',
     Op.sub => '−',
     Op.mul => '·',
+    Op.div => ':',
   };
 
   static Op? parse(String s) => switch (s) {
     '+' => Op.add,
     '-' || '−' || '–' => Op.sub,
     '*' || '·' || 'x' || '×' => Op.mul,
+    ':' || '/' || '÷' => Op.div,
     _ => null,
   };
 
@@ -31,6 +38,7 @@ enum Op {
     Op.add => a + b,
     Op.sub => a - b,
     Op.mul => a * b,
+    Op.div => b == 0 ? 0 : a ~/ b,
   };
 }
 
@@ -66,20 +74,29 @@ class Question {
     Op.add => [a, b],
     Op.sub => [a, -b],
     Op.mul => [b, for (var i = 1; i < a; i++) b],
+    // 17 : 5 on the abacus: take 5 away while you can.
+    Op.div => [a, for (var i = 0; i < a ~/ math.max(1, b); i++) -b],
   };
+
+  /// For a division: what is left over (17 : 5 leaves 2).
+  int get remainder => op == Op.div && b != 0 ? a % b : 0;
 
   /// "57 + 20 = ?", "9 + ? = 15", "? + 8 = 85"
   String format() {
     String part(Slot s, int v) => s == unknown ? '?' : '$v';
+    final rest = op == Op.div && (remainder != 0 || unknown == Slot.rest)
+        ? ' R ${part(Slot.rest, remainder)}'
+        : '';
     return '${part(Slot.a, a)} ${op.printed} ${part(Slot.b, b)} = '
-        '${part(Slot.result, result)}';
+        '${part(Slot.result, result)}$rest';
   }
 
   @override
   String toString() => format();
 }
 
-enum Slot { a, b, result }
+/// The empty place in `a op b = c` (and the remainder of a division).
+enum Slot { a, b, result, rest }
 
 /// The error a wrong answer most likely shows. Codes are reported to the
 /// parent and drive the next exercises.
@@ -109,6 +126,7 @@ Mistake classify(Question q, int given) {
       Op.add => q.a - q.b,
       Op.sub => q.a + q.b,
       Op.mul => q.a + q.b,
+      Op.div => q.a * q.b,
     };
     if (given == other) return Mistake.wrongOp;
   }
@@ -142,6 +160,7 @@ sealed class Task {
       if (q.result < 0) w.add('negative');
       if (q.a > 1000 || q.b > 1000 || q.result > 1000) w.add('too_big');
       if (q.op == Op.mul && (q.a > 10 || q.b > 10)) w.add('big_product');
+      if (q.op == Op.div && q.b == 0) w.add('divide_by_zero');
     }
     return w.toSet().toList();
   }
@@ -197,7 +216,7 @@ class EqTask extends Task {
   /// "8+5", "9+?=15", "?-5=7", "7*6".
   static EqTask parse(String e, {String n = '', int? child}) {
     final m = RegExp(
-      r'^\s*(\d+|\?)\s*([+\-*·−x×])\s*(\d+|\?)\s*(?:=\s*(\d+|\?)?)?\s*$',
+      r'^\s*(\d+|\?)\s*([+\-*·−x×:/÷])\s*(\d+|\?)\s*(?:=\s*(\d+|\?)?)?\s*$',
     ).firstMatch(e);
     if (m == null) throw FormatException('bad example "$e"');
     int? v(String? s) => s == null || s == '?' ? null : int.parse(s);
@@ -205,7 +224,7 @@ class EqTask extends Task {
     return EqTask(v(m[1]), op, v(m[3]), c: v(m[4]), n: n, child: child);
   }
 
-  int get answer => questions.single.answer;
+  int get answer => questions.first.answer;
 
   @override
   String get type => 'eq';
@@ -213,7 +232,19 @@ class EqTask extends Task {
   @override
   List<Question> get questions {
     if (a != null && b != null) {
-      return [Question(a: a!, op: op, b: b!, answer: op.apply(a!, b!))];
+      final q = Question(a: a!, op: op, b: b!, answer: op.apply(a!, b!));
+      return [
+        q,
+        if (q.remainder != 0)
+          Question(
+            a: a!,
+            op: op,
+            b: b!,
+            answer: q.remainder,
+            unknown: Slot.rest,
+            continues: true,
+          ),
+      ];
     }
     if (a != null) {
       // 9 + ? = 15, 15 − ? = 9, 3 · ? = 21
@@ -221,6 +252,7 @@ class EqTask extends Task {
         Op.add => c! - a!,
         Op.sub => a! - c!,
         Op.mul => a! == 0 ? 0 : c! ~/ a!,
+        Op.div => c! == 0 ? 0 : a! ~/ c!,
       };
       return [Question(a: a!, op: op, b: x, answer: x, unknown: Slot.b)];
     }
@@ -229,6 +261,7 @@ class EqTask extends Task {
       Op.add => c! - b!,
       Op.sub => c! + b!,
       Op.mul => b! == 0 ? 0 : c! ~/ b!,
+      Op.div => c! * b!,
     };
     return [Question(a: x, op: op, b: b!, answer: x, unknown: Slot.a)];
   }
@@ -244,7 +277,13 @@ class EqTask extends Task {
   }
 
   @override
-  String format() => questions.single.format();
+  String format() {
+    final q = questions.first;
+    if (op == Op.div && q.remainder != 0 && q.unknown == Slot.result) {
+      return '${q.a} : ${q.b} = ? R ?';
+    }
+    return q.format();
+  }
 
   String get compact {
     String s(int? v) => v == null ? '?' : '$v';

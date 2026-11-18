@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:goabacus_tutor/lesson.dart';
+import 'package:goabacus_tutor/speech/speech.dart';
 import 'package:goabacus_tutor/strings.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 
@@ -42,7 +43,8 @@ void main() {
     expect(l.startValue, 15);
     expect(l.goalValue, 7);
     l.onAbacus(15);
-    expect(l.say.args['next'], 'take');
+    expect(l.say.key, 'good');
+    expect(l.say.then?.key, 'take');
     l.onAbacus(7);
     expect(l.say.key, 'how_many_left');
     l.submit(7);
@@ -67,6 +69,129 @@ void main() {
     final h4 = l.nextHint();
     expect(h4.demoIsOwn, isTrue);
     expect(h4.demo!.terms, [8, 5]);
+  });
+
+  test('desk aids as German schools use them', () {
+    final all = Aid.values.toSet();
+    final l = Lesson(
+      _packet([
+        EqTask.parse('8+5'),
+        EqTask.parse('7+?=10'),
+        EqTask.parse('6*7'),
+        EqTask.parse('17:5'),
+      ]),
+      available: all,
+    );
+    expect(l.choice.aid, Aid.twentyField);
+    expect(l.say.key, 'field_bridge');
+    expect(saying(l.say), contains('8'));
+    l.submit(13);
+    l.next();
+    expect(l.choice.aid, Aid.rods);
+    expect(l.say.key, 'rods_missing');
+    l.submit(3);
+    l.next();
+    expect(l.choice.aid, Aid.hundredField);
+    expect(l.say.key, 'hf_mul');
+    // The first hint derives 6 · 7 from the core task 5 · 7.
+    l.nextHint();
+    expect(l.say.key, 'guide_times_derived');
+    expect(l.say.args['core'], 5);
+    l.submit(42);
+    l.next();
+    expect(l.say.key, 'hf_div');
+    l.submit(3);
+    l.next();
+    expect(l.say.key, 'hf_rest');
+    l.submit(2);
+    l.next();
+    expect(l.phase, Phase.done);
+    expect(l.results.map((r) => r.aids.first), [
+      'twentyField/act',
+      'rods/act',
+      'hundredField/act',
+      'hundredField/act',
+    ]);
+  });
+
+  test('stages: look, imagine, in the head; a mistake goes back to the hands', () {
+    final progress = Progress({Skill.bridge20.name: 4});
+    final l = Lesson(
+      _packet([EqTask.parse('8+5')]),
+      available: {Aid.twentyField},
+      progress: progress,
+    );
+    expect(l.choice.stage, Stage.imagine);
+    expect(l.say.key, 'stage_imagine');
+    expect(l.aidHidden, isTrue);
+    l.submit(12);
+    expect(l.choice.stage, Stage.act);
+    expect(l.say.then?.key, 'back_to_act');
+    expect(l.say.then?.then?.key, 'field_bridge');
+    expect(progress.streak(Skill.bridge20), 4); // recorded at the answer
+    l.submit(13);
+    expect(progress.streak(Skill.bridge20), 2);
+  });
+
+  test('two misses with one desk aid: another aid', () {
+    final l = Lesson(
+      _packet([EqTask.parse('8+5')]),
+      available: {Aid.twentyField, Aid.rods},
+    );
+    l.submit(12);
+    expect(l.choice.aid, Aid.twentyField);
+    l.submit(11);
+    expect(l.choice.aid, Aid.rods);
+    expect(l.say.key, 'other_aid');
+  });
+
+  test('the child asks for another aid', () {
+    final l = Lesson(
+      _packet([EqTask.parse('8+5')]),
+      available: {Aid.twentyField, Aid.rods},
+    );
+    expect(l.choice.aid, Aid.twentyField);
+    l.switchAid();
+    expect(l.choice.aid, Aid.rods);
+    expect(l.say.key, 'rods_bridge');
+    l.switchAid();
+    expect(l.choice.aid, Aid.abacus);
+    l.switchAid();
+    // All tried: start over from the first.
+    expect(l.choice.aid, isNot(Aid.abacus));
+  });
+
+  test('division with remainder on the abacus', () {
+    final l = Lesson(_packet([EqTask.parse('17:5')]));
+    expect(l.usesAbacus, isTrue);
+    l.onAbacus(17);
+    expect(l.say.then?.key, 'div_abacus');
+    l.onAbacus(2);
+    expect(l.phase, Phase.answer);
+    expect(l.submit(3), isTrue);
+    l.next();
+    l.onAbacus(2);
+    expect(l.say.key, 'how_many_rest');
+    expect(l.submit(2), isTrue);
+  });
+
+  test('every spoken line can be voiced with recorded clips', () {
+    for (final lang in languages.keys) {
+      final have = allClips(lang).toSet();
+      for (final key in spokenKeys) {
+        final args = <String, Object>{
+          'n': 57, 'k': 3, 'a': 8, 'b': 5, 'c': 13, 'd': 7, 'r': 85,
+          'row': 1, 'op': '+', 'e': '7 + 6', 'aid': 'rods', 'core': 5,
+          'rest': 1,
+        };
+        final c = clips(Say(key, args), lang)!;
+        for (final x in c) {
+          expect(have, contains(x), reason: '$lang $key');
+        }
+        expect(render(Say(key, args), lang), isNot(contains('{')),
+            reason: '$lang $key');
+      }
+    }
   });
 
   test('tasks answered wrongly in the book come first', () {

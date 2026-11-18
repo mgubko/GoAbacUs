@@ -95,9 +95,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _start(TaskPacket p) async {
     final lesson = await Navigator.of(context).push<Lesson>(
-      MaterialPageRoute(builder: (_) => LessonScreen(packet: p)),
+      MaterialPageRoute(
+        builder: (_) => LessonScreen(
+          packet: p,
+          kid: store.pairing?.kid,
+          progress: store.progress,
+        ),
+      ),
     );
     if (lesson == null) return;
+    await store.setProgress(lesson.progress);
     await store.finish(p, lesson.report());
     if (!mounted) return;
     setState(() {});
@@ -142,12 +149,17 @@ class _HomeScreenState extends State<HomeScreen> {
       EqTask.parse('32-7', n: '4'),
       ChainTask(6, [7, -5, 8], n: '5'),
       EqTask.parse('3*4', n: '6'),
+      EqTask.parse('6*7', n: '7'),
+      EqTask.parse('17:5', n: '8'),
     ],
   );
 
   void _try() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => LessonScreen(packet: sample)),
+      MaterialPageRoute(
+        builder: (_) =>
+            LessonScreen(packet: sample, available: Aid.values.toSet()),
+      ),
     );
   }
 

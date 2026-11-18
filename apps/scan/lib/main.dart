@@ -223,6 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       if (x.tries > 1) tr('tries', {'n': x.tries}),
                       if (x.hints > 0) tr('hints', {'n': x.hints}),
                       for (final m in x.mistakes) tr('mistake_${m.name}'),
+                      for (final a in x.aids) _aidUsed(a),
                       '${x.seconds} s',
                     ].join(' · '),
                   ),
@@ -373,6 +374,9 @@ class _KidDialogState extends State<_KidDialog> {
   String _school = 'de';
   String _home = 'ru';
 
+  /// Physical aids on the desk; fingers and the screen abacus always count.
+  final _aids = <String>{'abacus'};
+
   @override
   void dispose() {
     _name.dispose();
@@ -416,6 +420,24 @@ class _KidDialogState extends State<_KidDialog> {
             ),
             lang(tr('school_lang'), _school, (v) => _school = v),
             lang(tr('home_lang'), _home, (v) => _home = v),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(tr('aids_home')),
+            ),
+            for (final a in const [
+              'abacus', 'twentyField', 'rods', 'hundredField',
+              'additionTable', 'timesTable',
+            ])
+              CheckboxListTile(
+                dense: true,
+                contentPadding: EdgeInsets.zero,
+                value: _aids.contains(a),
+                title: Text(tr('aid_$a')),
+                onChanged: (v) => setState(
+                  () => v! ? _aids.add(a) : _aids.remove(a),
+                ),
+              ),
           ],
         ),
       ),
@@ -428,7 +450,13 @@ class _KidDialogState extends State<_KidDialog> {
           onPressed: () async {
             final name = _name.text.trim();
             if (name.isEmpty) return;
-            final kid = await widget.store.addKid(name, _grade, _school, _home);
+            final kid = await widget.store.addKid(
+              name,
+              _grade,
+              _school,
+              _home,
+              aids: _aids,
+            );
             if (context.mounted) Navigator.pop(context, kid);
           },
           child: Text(tr('save')),
@@ -436,4 +464,12 @@ class _KidDialogState extends State<_KidDialog> {
       ],
     );
   }
+}
+
+/// "twentyField/act" as "Поле на 20 с фишками (руками)".
+String _aidUsed(String a) {
+  final p = a.split('/');
+  return p.length == 2
+      ? '${tr('aid_${p[0]}')} (${tr('stage_${p[1]}')})'
+      : tr('aid_$a');
 }
