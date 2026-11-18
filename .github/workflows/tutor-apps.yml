@@ -40,7 +40,7 @@ jobs:
           dart pub get
           dart analyze --fatal-infos
           dart test
-      - name: tutor_vision (camera: sheet markers, rods, abacus, touches)
+      - name: "tutor_vision (camera recognition: sheet markers, rods, abacus, touches)"
         working-directory: packages/tutor_vision
         run: |
           dart pub get
