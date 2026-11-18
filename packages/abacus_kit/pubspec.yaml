@@ -1,0 +1,25 @@
+name: abacus_kit
+description: The GoAbacUs abacus - physics, painting, sound, tilt and the step-by-step example player - shared by the tutor apps. Copied from the GoAbacUs app, which stays as it is.
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.2
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  sensors_plus: ^7.1.1
+  audioplayers: ^6.7.1
+  vibration: ^3.1.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  assets:
+    - assets/images/
+    - assets/sounds/
