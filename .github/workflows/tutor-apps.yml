@@ -1,6 +1,6 @@
 name: Tutor apps
 
-# GoAbacUs Scan (parent) and GoAbacUs Tutor (child). The GoAbacUs abacus
+# GoAbacUs Scan (parent), GoAbacUs Tutor (child) and the Camera Lab. The GoAbacUs abacus
 # app itself is built by android.yml / ios.yml and is not touched here.
 on:
   push:
@@ -40,6 +40,12 @@ jobs:
           dart pub get
           dart analyze --fatal-infos
           dart test
+      - name: tutor_vision (camera: sheet markers, rods, abacus, touches)
+        working-directory: packages/tutor_vision
+        run: |
+          dart pub get
+          dart analyze --fatal-infos
+          dart test
       - name: abacus_kit (physics, sound, example player)
         working-directory: packages/abacus_kit
         run: |
@@ -58,6 +64,12 @@ jobs:
           flutter pub get
           flutter analyze
           flutter test
+      - name: Camera Lab
+        working-directory: apps/camlab
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
 
   apk:
     name: Debug APK (${{ matrix.app }})
@@ -65,7 +77,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        app: [scan, tutor]
+        app: [scan, tutor, camlab]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
@@ -93,6 +105,12 @@ jobs:
             echo "::error::The release tutor app must not request INTERNET"; exit 1
           fi
           cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/goabacus-tutor-release-debugsigned.apk
+      - name: Camera Lab release build (recognition in debug mode is ~10x slower)
+        if: matrix.app == 'camlab'
+        working-directory: apps/camlab
+        run: |
+          flutter build apk --release --build-number=${{ github.run_number }}
+          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/goabacus-camlab-release-debugsigned.apk
       - uses: actions/upload-artifact@v4
         with:
           name: goabacus-${{ matrix.app }}-apk

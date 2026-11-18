@@ -1,0 +1,22 @@
+name: goabacus_camlab
+description: "GoAbacUs Camera Lab - tests the camera recognition (sheets, rods, abacus, touches) on a real phone."
+publish_to: 'none'
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  camera: ^0.11.2
+  tutor_vision:
+    path: ../../packages/tutor_vision
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true

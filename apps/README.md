@@ -8,6 +8,8 @@ repository root stays as it is (the free app); nothing here changes it.
 | `apps/scan` — **GoAbacUs Scan** (`com.goabacus.scan`) | parent | Photographs a homework page, reads it **on the phone** (ML Kit text recognition + rule parser, no network), shows "Is it right?" with every task editable, sends the tasks to the child's device as a signed QR code, reads the lesson report back from a QR code. |
 | `apps/tutor` — **GoAbacUs Tutor** (`com.goabacus.tutor`) | child | Receives tasks by QR code and leads the lesson on the screen abacus: one small question at a time, a hint ladder (remark → wire to look at → similar example → own example move by move), mistakes classified (off by one, lost ten, wrong sign, swapped digits). Shows the report as a QR code. **No internet:** the release build has no `INTERNET` permission (checked in CI) and no network code (checked by a test). |
 
+| `apps/camlab` — **GoAbacUs Camera Lab** (`com.goabacus.camlab`) | developer / test | Point the phone at a printed sheet: it finds the corner markers, shows the straightened field and reads rods (sheet 14), an abacus (sheet 15) or finger touches from behind (film tables 10–13). For testing the camera before the desk box exists. |
+
 Shared code:
 
 - `packages/tutor_tasks` (pure Dart): task model (`eq` incl. missing numbers and
@@ -17,6 +19,7 @@ Shared code:
   worksheet parser. Its test runs the parser on OCR boxes of the nine real
   pages: **126 of 140** tasks, 16 of 18 "by steps" groups, as the Python
   prototype.
+- `packages/tutor_vision` (pure Dart): camera recognition, see its README.
 - `packages/abacus_kit`: physics, painting, sound, tilt and the example player,
   copied from the GoAbacUs app (`lib/`), plus two tutor options on the
   controller: hide the row digits, light up a wire.
