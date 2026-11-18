@@ -54,6 +54,7 @@ class Kid {
     this.grade = 1,
     this.schoolLang = 'de',
     this.homeLang = 'ru',
+    this.aids = const {},
   });
   final int id;
   final String name;
@@ -61,12 +62,16 @@ class Kid {
   final String schoolLang;
   final String homeLang;
 
+  /// The teaching aids the family has on the desk (names of `Aid`).
+  final Set<String> aids;
+
   Map<String, Object?> toJson() => {
     'id': id,
     'name': name,
     'grade': grade,
     'sl': schoolLang,
     'hl': homeLang,
+    if (aids.isNotEmpty) 'aids': aids.toList(),
   };
 
   static Kid fromJson(Map<String, Object?> j) => Kid(
@@ -75,6 +80,7 @@ class Kid {
     grade: (j['grade'] as int?) ?? 1,
     schoolLang: (j['sl'] as String?) ?? 'de',
     homeLang: (j['hl'] as String?) ?? 'ru',
+    aids: {for (final a in (j['aids'] as List?) ?? const []) a as String},
   );
 }
 
@@ -183,6 +189,7 @@ class TaskResult {
     this.hints = 0,
     this.mistakes = const [],
     this.seconds = 0,
+    this.aids = const [],
   });
 
   final String n;
@@ -194,6 +201,9 @@ class TaskResult {
   final List<Mistake> mistakes;
   final int seconds;
 
+  /// The aids used, as `Aid` names with the stage: "twentyField/act".
+  final List<String> aids;
+
   Map<String, Object?> toJson() => {
     'n': n,
     'ok': solved ? 1 : 0,
@@ -201,6 +211,7 @@ class TaskResult {
     if (hints != 0) 'h': hints,
     if (mistakes.isNotEmpty) 'm': [for (final m in mistakes) m.index],
     if (seconds != 0) 's': seconds,
+    if (aids.isNotEmpty) 'a': aids,
   };
 
   static TaskResult fromJson(Map<String, Object?> j) => TaskResult(
@@ -212,6 +223,7 @@ class TaskResult {
       for (final m in (j['m'] as List?) ?? const []) Mistake.values[m as int],
     ],
     seconds: (j['s'] as int?) ?? 0,
+    aids: [for (final a in (j['a'] as List?) ?? const []) a as String],
   );
 }
 

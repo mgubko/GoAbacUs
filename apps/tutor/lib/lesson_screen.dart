@@ -2,13 +2,28 @@ import 'package:abacus_kit/abacus_kit.dart';
 import 'package:flutter/material.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 
+import 'aid_picture.dart';
 import 'lesson.dart';
+import 'speech/voice.dart';
 import 'strings.dart';
 
 /// A lesson on the screen abacus. Returns the lesson when it was finished.
 class LessonScreen extends StatefulWidget {
-  const LessonScreen({super.key, required this.packet});
+  const LessonScreen({
+    super.key,
+    required this.packet,
+    this.kid,
+    this.progress,
+    this.available,
+  });
   final TaskPacket packet;
+  final Kid? kid;
+
+  /// The child's streaks per skill; the lesson moves them on.
+  final Progress? progress;
+
+  /// The aids on the desk; null takes them from [kid].
+  final Set<Aid>? available;
 
   @override
   State<LessonScreen> createState() => _LessonScreenState();
@@ -17,7 +32,14 @@ class LessonScreen extends StatefulWidget {
 class _LessonScreenState extends State<LessonScreen> {
   static const rows = 4;
   final _abacus = AbacusController(config: const AbacusConfig(rows: rows));
-  late final Lesson _lesson = Lesson(widget.packet, rows: rows);
+  late final Lesson _lesson = Lesson(
+    widget.packet,
+    rows: rows,
+    kid: widget.kid,
+    progress: widget.progress,
+    available: widget.available,
+  );
+  final _voice = Voice();
   String _typed = '';
   bool _ownDemo = false;
   bool _wasPlaying = false;
@@ -32,7 +54,8 @@ class _LessonScreenState extends State<LessonScreen> {
     _abacus.sound.init();
     _abacus.tilt.start();
     _abacus.addListener(_onTick);
-    _lesson.addListener(() => setState(() {}));
+    _lesson.addListener(_onLesson);
+    _onLesson();
   }
 
   @override
@@ -40,10 +63,27 @@ class _LessonScreenState extends State<LessonScreen> {
     _abacus.removeListener(_onTick);
     _abacus.dispose();
     _lesson.dispose();
+    _voice.dispose();
     super.dispose();
   }
 
   Duration? _lastTick;
+
+  void _onLesson() {
+    final p = _lesson.preset;
+    if (p != null) {
+      // Put the number on the abacus for the child to look at.
+      _abacus.physics.clear();
+      var v = p;
+      for (var r = 0; r < rows; r++) {
+        _abacus.physics.setRowCount(r, v % 10);
+        v ~/= 10;
+      }
+      _lesson.presetDone();
+    }
+    _voice.say(_lesson.say, appLang.value);
+    if (mounted) setState(() {});
+  }
 
   /// Called every frame by the abacus: feeds the lesson the settled number.
   void _onTick() {
@@ -125,6 +165,32 @@ class _LessonScreenState extends State<LessonScreen> {
     _hint();
   }
 
+  Widget _aidArea() {
+    final l = _lesson;
+    final showAbacus = l.usesAbacus || l.phase == Phase.demo;
+    final abacus = Visibility(
+      visible: showAbacus && !l.aidHidden,
+      maintainState: true,
+      maintainAnimation: true,
+      maintainSize: true,
+      child: AbacusView(controller: _abacus),
+    );
+    Widget? over;
+    if (l.aidHidden) {
+      over = _EyesClosed(aid: l.choice.aid);
+    } else if (!showAbacus) {
+      over = AidPicture(
+        aid: l.choice.aid,
+        question: l.question,
+        reveal: l.reveal,
+      );
+    }
+    return Stack(
+      fit: StackFit.expand,
+      children: [abacus, ?over],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_lesson.phase == Phase.done) return _Done(lesson: _lesson);
@@ -137,6 +203,21 @@ class _LessonScreenState extends State<LessonScreen> {
           tr('task_of', {'n': l.number, 'total': l.tasks.length}),
         ),
         actions: [
+          ValueListenableBuilder(
+            valueListenable: Voice.on,
+            builder: (context, on, _) => IconButton(
+              tooltip: tr('voice'),
+              icon: Icon(on ? Icons.volume_up : Icons.volume_off),
+              onPressed: () {
+                Voice.on.value = !on;
+                if (on) {
+                  _voice.stop();
+                } else {
+                  _voice.repeat(appLang.value);
+                }
+              },
+            ),
+          ),
           TextButton(
             onPressed: () => setState(l.skip),
             child: Text(tr('skip')),
@@ -147,8 +228,18 @@ class _LessonScreenState extends State<LessonScreen> {
         child: Column(
           children: [
             _TaskCard(lesson: l, typed: _typed),
-            _Bubble(text: saying(l.say), happy: l.phase == Phase.right),
-            Expanded(child: AbacusView(controller: _abacus)),
+            GestureDetector(
+              // Tap the owl's words to hear them again.
+              onTap: () => _voice.repeat(appLang.value),
+              child: _Bubble(text: saying(l.say), happy: l.phase == Phase.right),
+            ),
+            _AidBar(
+              lesson: l,
+              onSwitch: l.phase == Phase.answer || l.phase == Phase.setStart
+                  ? l.switchAid
+                  : null,
+            ),
+            Expanded(child: _aidArea()),
             _Tools(
               onHint: l.phase == Phase.demo || l.phase == Phase.right
                   ? null
@@ -156,12 +247,81 @@ class _LessonScreenState extends State<LessonScreen> {
               onSimilar: l.phase == Phase.demo || l.phase == Phase.right
                   ? null
                   : _similar,
-              onClear: l.phase == Phase.demo ? null : _abacus.clear,
+              onClear: l.phase == Phase.demo || !l.usesAbacus ? null : _abacus.clear,
               nudge: _nudge,
             ),
             _Keypad(onKey: _key),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// Which aid the tutor chose and how far from it the child is.
+class _AidBar extends StatelessWidget {
+  const _AidBar({required this.lesson, required this.onSwitch});
+  final Lesson lesson;
+  final VoidCallback? onSwitch;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = lesson.choice;
+    final icon = switch (c.aid) {
+      Aid.fingers => '✋',
+      Aid.twentyField => '🔴',
+      Aid.rods => '📏',
+      Aid.abacus => '🧮',
+      Aid.hundredField => '⠿',
+      Aid.additionTable || Aid.timesTable => '▦',
+    };
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          Chip(
+            avatar: Text(icon),
+            label: Text(
+              '${tr('name_${c.aid.name}')} · ${tr('stage_name_${c.stage.name}')}',
+            ),
+            backgroundColor: const Color(0xFFFDFAF1),
+          ),
+          const Spacer(),
+          TextButton.icon(
+            onPressed: onSwitch,
+            icon: const Icon(Icons.swap_horiz),
+            label: Text(tr('switch_aid')),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// The aid is hidden: the child sees it in the head.
+class _EyesClosed extends StatelessWidget {
+  const _EyesClosed({required this.aid});
+  final Aid aid;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: const Color(0xFF3B2A1E),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      alignment: Alignment.center,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('🙈', style: TextStyle(fontSize: 56)),
+          const SizedBox(height: 8),
+          Text(
+            tr('eyes_closed'),
+            style: const TextStyle(fontSize: 20, color: Color(0xFFFDFAF1)),
+          ),
+        ],
       ),
     );
   }

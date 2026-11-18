@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 
@@ -58,6 +60,17 @@ class TutorStore {
 
   /// The last lesson's report code, to show the parent.
   String? get lastReport => _p.getString('last_report');
+
+  /// How far the child has moved away from the aids, per skill.
+  Progress get progress {
+    final s = _p.getString('progress');
+    if (s == null) return Progress();
+    final j = jsonDecode(s) as Map<String, Object?>;
+    return Progress({for (final e in j.entries) e.key: e.value as int});
+  }
+
+  Future<void> setProgress(Progress p) =>
+      _p.setString('progress', jsonEncode(p.toJson()));
 
   String? get lang => _p.getString('lang');
   Future<void> setLang(String l) => _p.setString('lang', l);
