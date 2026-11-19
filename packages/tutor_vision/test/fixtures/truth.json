@@ -1,0 +1,271 @@
+{
+ "calib_0.jpg": {
+  "sheet": 14,
+  "mirrored": false,
+  "hint": "ok"
+ },
+ "calib_1.jpg": {
+  "sheet": 14,
+  "mirrored": false,
+  "hint": "ok"
+ },
+ "calib_2.jpg": {
+  "sheet": 14,
+  "mirrored": false,
+  "hint": "ok"
+ },
+ "calib_3.jpg": {
+  "sheet": 14,
+  "mirrored": false,
+  "hint": "ok"
+ },
+ "calib_4.jpg": {
+  "sheet": 14,
+  "mirrored": true,
+  "hint": "ok"
+ },
+ "calib_5.jpg": {
+  "sheet": 14,
+  "mirrored": true,
+  "hint": "ok"
+ },
+ "calib_6.jpg": {
+  "sheet": 14,
+  "mirrored": false,
+  "hint": "cutRight"
+ },
+ "rods_0.jpg": {
+  "trains": [
+   [
+    3
+   ],
+   [
+    5
+   ],
+   [
+    7
+   ],
+   [
+    10
+   ]
+  ]
+ },
+ "rods_1.jpg": {
+  "trains": [
+   [
+    4
+   ],
+   [
+    7,
+    5
+   ],
+   [
+    8,
+    2
+   ]
+  ]
+ },
+ "rods_2.jpg": {
+  "trains": [
+   [
+    1
+   ],
+   [
+    2
+   ],
+   [
+    6
+   ],
+   [
+    8
+   ],
+   [
+    9
+   ]
+  ]
+ },
+ "rods_3.jpg": {
+  "trains": [
+   [
+    1
+   ],
+   [
+    3,
+    3,
+    3
+   ],
+   [
+    9,
+    6
+   ],
+   [
+    10
+   ]
+  ]
+ },
+ "rods_4.jpg": {
+  "trains": [
+   [
+    2,
+    5
+   ],
+   [
+    6,
+    4
+   ],
+   [
+    7,
+    1
+   ]
+  ]
+ },
+ "rods_5.jpg": {
+  "trains": [
+   [
+    2
+   ],
+   [
+    3
+   ],
+   [
+    4
+   ],
+   [
+    5
+   ],
+   [
+    10,
+    5
+   ]
+  ]
+ },
+ "abacus_0.jpg": {
+  "digits": [
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "abacus_1.jpg": {
+  "digits": [
+   3,
+   0,
+   7,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "abacus_2.jpg": {
+  "digits": [
+   5,
+   2,
+   9,
+   4,
+   1,
+   0,
+   0,
+   0,
+   0,
+   0
+  ]
+ },
+ "abacus_3.jpg": {
+  "digits": [
+   10,
+   0,
+   6,
+   8,
+   3,
+   5,
+   1,
+   2,
+   7,
+   4
+  ]
+ },
+ "abacus_4.jpg": {
+  "digits": [
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1,
+   1
+  ]
+ },
+ "touch_0.jpg": {
+  "cell": [
+   3,
+   4
+  ],
+  "hover_mm": 0
+ },
+ "touch_1.jpg": {
+  "cell": [
+   7,
+   9
+  ],
+  "hover_mm": 0
+ },
+ "touch_2.jpg": {
+  "cell": [
+   11,
+   2
+  ],
+  "hover_mm": 0
+ },
+ "touch_3.jpg": {
+  "cell": [
+   1,
+   11
+  ],
+  "hover_mm": 0
+ },
+ "touch_4.jpg": {
+  "cell": [
+   6,
+   6
+  ],
+  "hover_mm": 0
+ },
+ "touch_5.jpg": {
+  "cell": null,
+  "hover_mm": 2.5
+ },
+ "touch_6.jpg": {
+  "cell": null,
+  "hover_mm": 4
+ },
+ "touch_7.jpg": {
+  "cell": null,
+  "hover_mm": 8
+ },
+ "counters_0.jpg": {
+  "red": 3,
+  "blue": 2
+ },
+ "counters_1.jpg": {
+  "red": 5,
+  "blue": 2
+ },
+ "counters_2.jpg": {
+  "red": 3,
+  "blue": 3
+ }
+}

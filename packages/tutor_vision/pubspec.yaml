@@ -1,0 +1,12 @@
+name: tutor_vision
+description: "GoAbacUs camera recognition: sheet markers, abacus beads, rods, touches. Pure Dart."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.2
+
+dev_dependencies:
+  image: ^4.5.4
+  lints: ^6.0.0
+  test: ^1.26.3

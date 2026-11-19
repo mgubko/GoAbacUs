@@ -44,6 +44,12 @@ jobs:
           dart pub get
           dart analyze --fatal-infos
           dart test
+      - name: "tutor_vision (camera recognition: sheet markers, rods, abacus, touches)"
+        working-directory: packages/tutor_vision
+        run: |
+          dart pub get
+          dart analyze --fatal-infos
+          dart test
       - name: Licence server (kit codes, store purchases, signed licences)
         working-directory: server/license
         run: |
@@ -64,6 +70,12 @@ jobs:
           flutter test
       - name: Scan app (parent)
         working-directory: apps/scan
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+      - name: tutor_camera ("what the camera sees" screen, live recognition)
+        working-directory: packages/tutor_camera
         run: |
           flutter pub get
           flutter analyze

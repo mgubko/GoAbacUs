@@ -34,6 +34,8 @@ dependencies:
     path: ../../packages/abacus_kit
   tutor_tasks:
     path: ../../packages/tutor_tasks
+  tutor_camera:
+    path: ../../packages/tutor_camera
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.

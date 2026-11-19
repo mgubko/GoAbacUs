@@ -1,0 +1,21 @@
+name: tutor_camera
+description: "GoAbacUs desk camera: live recognition of the desk aids and the 'what the camera sees' screen."
+publish_to: 'none'
+version: 0.1.0
+
+environment:
+  sdk: ^3.9.2
+  flutter: ">=3.35.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  camera: ^0.11.2
+  tutor_vision:
+    path: ../tutor_vision
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  image: ^4.5.4

@@ -1,5 +1,6 @@
 import 'package:abacus_kit/abacus_kit.dart';
 import 'package:flutter/material.dart';
+import 'package:tutor_camera/tutor_camera.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 
 import 'aid_picture.dart';
@@ -208,6 +209,11 @@ class _LessonScreenState extends State<LessonScreen> {
         backgroundColor: const Color(0xFFE9DCC6),
         title: Text(tr('task_of', {'n': l.number, 'total': l.tasks.length})),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.videocam_outlined),
+            tooltip: tr('camera_view'),
+            onPressed: () => DeskCameraScreen.open(context, preferFront: true),
+          ),
           ValueListenableBuilder(
             valueListenable: Voice.on,
             builder: (context, on, _) => IconButton(
