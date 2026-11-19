@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 
@@ -71,6 +72,38 @@ class TutorStore {
 
   Future<void> setProgress(Progress p) =>
       _p.setString('progress', jsonEncode(p.toJson()));
+
+  /// The device's date, never earlier than a date seen before.
+  TrustedDate get date {
+    final d = _p.getInt('latest_day');
+    return TrustedDate(
+      d == null
+          ? null
+          : DateTime.fromMillisecondsSinceEpoch(
+              d * Duration.millisecondsPerDay,
+              isUtc: true,
+            ),
+    );
+  }
+
+  Future<void> setDate(TrustedDate d) async {
+    final l = d.latestSeen;
+    if (l == null) return;
+    await _p.setInt(
+      'latest_day',
+      l.millisecondsSinceEpoch ~/ Duration.millisecondsPerDay,
+    );
+  }
+
+  /// Null when the child may open [p]: the family's licence holds today.
+  Future<Refusal?> check(TaskPacket p) async {
+    final key = pairing?.key;
+    if (key == null) return Refusal.foreign;
+    final d = date..saw(p.issued);
+    final today = d.today(DateTime.now());
+    await setDate(d);
+    return checkLicense(p, key, trustedLicenseKeys(debug: kDebugMode), today);
+  }
 
   String? get lang => _p.getString('lang');
   Future<void> setLang(String l) => _p.setString('lang', l);

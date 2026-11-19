@@ -11,8 +11,10 @@ void main() {
       id: '2026-11-19-1',
       tasks: [EqTask.parse('17:5', n: '1')],
     ).encode(key);
-    final uri = Handoff(pairing: Pairing(key, kid).encode(), packet: packet)
-        .toTutor();
+    final uri = Handoff(
+      pairing: Pairing(key, kid).encode(),
+      packet: packet,
+    ).toTutor();
     expect(uri.scheme, tutorScheme);
     final back = Handoff.parse(Uri.parse(uri.toString()))!;
     expect(back.packet, packet);
@@ -28,5 +30,11 @@ void main() {
     expect(h.report, 'GR1.abc.def');
     expect(Handoff.parse(Uri.parse('https://example.com/?c=GA1.x')), isNull);
     expect(Handoff.parse(Uri.parse('goabacus-tutor://open?c=evil')), isNull);
+    expect(
+      Handoff.parse(
+        Uri.parse('goabacus-scan://activate?code=GA7K3MQ9X2PD'),
+      )!.activation,
+      'GA7K3MQ9X2PD',
+    );
   });
 }

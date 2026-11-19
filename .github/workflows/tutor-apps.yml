@@ -8,11 +8,13 @@ on:
     paths:
       - 'apps/**'
       - 'packages/**'
+      - 'server/**'
       - '.github/workflows/tutor-apps.yml'
   pull_request:
     paths:
       - 'apps/**'
       - 'packages/**'
+      - 'server/**'
       - '.github/workflows/tutor-apps.yml'
   workflow_dispatch:
 
@@ -36,6 +38,12 @@ jobs:
           cache: true
       - name: tutor_tasks (tasks, QR packets, offline page parser)
         working-directory: packages/tutor_tasks
+        run: |
+          dart pub get
+          dart analyze --fatal-infos
+          dart test
+      - name: Licence server (kit codes, store purchases, signed licences)
+        working-directory: server/license
         run: |
           dart pub get
           dart analyze --fatal-infos

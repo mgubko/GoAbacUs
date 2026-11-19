@@ -104,6 +104,11 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     final packet = TaskPacket.decode(code, key);
     if (packet == null) return;
+    final refused = await store.check(packet);
+    if (refused != null) {
+      if (mounted) setState(() => _message = tr('lic_${refused.name}'));
+      return;
+    }
     await store.add(code, packet);
     final queued = store.queue.where((q) => q.id == packet.id).firstOrNull;
     if (!mounted) return;
@@ -181,11 +186,25 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (code == null) return;
     final p = TaskPacket.decode(code, key)!;
+    final refused = await store.check(p);
+    if (refused != null) {
+      setState(() => _message = tr('lic_${refused.name}'));
+      return;
+    }
     await store.add(code, p);
     setState(() => _message = tr('received', {'n': p.tasks.length}));
   }
 
   Future<void> _start(TaskPacket p) async {
+    // The subscription may have run out since the tasks came.
+    if (p.family != 'demo') {
+      final refused = await store.check(p);
+      if (refused != null) {
+        if (mounted) setState(() => _message = tr('lic_${refused.name}'));
+        return;
+      }
+    }
+    if (!mounted) return;
     final lesson = await Navigator.of(context).push<Lesson>(
       MaterialPageRoute(
         builder: (_) => LessonScreen(

@@ -130,7 +130,9 @@ class TaskPacket {
     required this.tasks,
     this.lang = 'de',
     this.source = '',
-  });
+    this.license,
+    DateTime? issued,
+  }) : issued = issued ?? DateTime.now().toUtc();
 
   final String family;
   final int kid;
@@ -143,6 +145,12 @@ class TaskPacket {
   final String source;
   final List<Task> tasks;
 
+  /// The family's licence (`GL1.` code) at the time the parent sent it.
+  final String? license;
+
+  /// When the parent made the packet.
+  final DateTime issued;
+
   Map<String, Object?> toJson() => {
     'v': 1,
     'fam': family,
@@ -151,6 +159,8 @@ class TaskPacket {
     'lang': lang,
     if (source.isNotEmpty) 'src': source,
     'tasks': [for (final t in tasks) t.toJson()],
+    'at': issued.millisecondsSinceEpoch ~/ 1000,
+    'lic': ?license,
   };
 
   static TaskPacket fromJson(Map<String, Object?> j) => TaskPacket(
@@ -159,8 +169,16 @@ class TaskPacket {
     id: j['id'] as String,
     lang: (j['lang'] as String?) ?? 'de',
     source: (j['src'] as String?) ?? '',
+    license: j['lic'] as String?,
+    issued: j['at'] is int
+        ? DateTime.fromMillisecondsSinceEpoch(
+            (j['at'] as int) * 1000,
+            isUtc: true,
+          )
+        : null,
     tasks: [
-      for (final t in j['tasks'] as List) Task.fromJson(t as Map<String, Object?>),
+      for (final t in j['tasks'] as List)
+        Task.fromJson(t as Map<String, Object?>),
     ],
   );
 
@@ -260,7 +278,8 @@ class LessonReport {
     packet: j['p'] as String,
     finished: DateTime.fromMillisecondsSinceEpoch((j['at'] as int) * 1000),
     results: [
-      for (final r in j['r'] as List) TaskResult.fromJson(r as Map<String, Object?>),
+      for (final r in j['r'] as List)
+        TaskResult.fromJson(r as Map<String, Object?>),
     ],
   );
 
@@ -278,7 +297,10 @@ class LessonReport {
 }
 
 String _seal(String prefix, Map<String, Object?> json, FamilyKey key) {
-  final body = ZLibEncoder().encodeBytes(utf8.encode(jsonEncode(json)), level: 9);
+  final body = ZLibEncoder().encodeBytes(
+    utf8.encode(jsonEncode(json)),
+    level: 9,
+  );
   return '$prefix${_b64(body)}.${_b64(key.sign(body))}';
 }
 

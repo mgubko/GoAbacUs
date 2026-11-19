@@ -18,6 +18,18 @@ class FamilyStore {
     return s;
   }
 
+  /// The family's licence (`GL1.` code), as the server signed it.
+  String? get license => _p.getString('license');
+  Future<void> setLicense(String code) => _p.setString('license', code);
+
+  DateTime? get lastRefresh {
+    final t = _p.getInt('license_refresh');
+    return t == null ? null : DateTime.fromMillisecondsSinceEpoch(t);
+  }
+
+  Future<void> setLastRefresh(DateTime t) =>
+      _p.setInt('license_refresh', t.millisecondsSinceEpoch);
+
   FamilyKey get key =>
       FamilyKey.decode(_p.getString('fam_id')!, _p.getString('fam_key')!);
 

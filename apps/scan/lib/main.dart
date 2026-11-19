@@ -7,10 +7,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'license.dart';
 import 'qr.dart';
 import 'recognize.dart';
 import 'review_screen.dart';
 import 'store.dart';
+import 'subscription_screen.dart';
 import 'strings.dart';
 
 /// GoAbacUs Scan: the parent's app. Photographs a homework page, reads it
@@ -62,21 +64,47 @@ class _HomeScreenState extends State<HomeScreen> {
   late Kid? _kid = store.kids.firstOrNull;
   bool _busy = false;
   StreamSubscription<Uri>? _links;
+  late final _licensing = Licensing(store)..addListener(_changed);
+
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
+  /// Recognising pages and sending tasks need a subscription.
+  Future<bool> _needLicense() async {
+    if (_licensing.active) return true;
+    await _subscription();
+    return _licensing.active;
+  }
+
+  Future<void> _subscription({String? code}) => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => SubscriptionScreen(licensing: _licensing, code: code),
+    ),
+  );
 
   @override
   void initState() {
     super.initState();
     // The tutor on this phone hands the report back by an app link.
     _links = AppLinks().uriLinkStream.listen(_onLink, onError: (_) {});
+    _licensing.refreshIfDue();
   }
 
   @override
   void dispose() {
     _links?.cancel();
+    _licensing.dispose();
     super.dispose();
   }
 
   Future<void> _onLink(Uri uri) async {
+    final kit = Handoff.parse(uri)?.activation;
+    if (kit != null) {
+      Navigator.of(context).popUntil((r) => r.isFirst);
+      await _subscription(code: kit);
+      return;
+    }
     final code = Handoff.parse(uri)?.report;
     if (code == null) return;
     final r = LessonReport.decode(code, store.key);
@@ -151,6 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fromCamera(ImageSource source) async {
     if (_kid == null) return _needKid();
+    if (!await _needLicense()) return;
     // 1600 px is plenty for print; the parser scales to its own size.
     final file = await ImagePicker().pickImage(
       source: source,
@@ -191,7 +220,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
     if (r == null || !mounted) return;
+    if (!await _needLicense() || !mounted) return;
     final packet = TaskPacket(
+      license: store.license,
       family: store.key.id,
       kid: _kid!.id,
       id: await store.nextPacketId(),
@@ -378,7 +409,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
-                  onPressed: () => _kid == null ? _needKid() : _review([]),
+                  onPressed: () async {
+                    if (_kid == null) return _needKid();
+                    if (await _needLicense()) await _review([]);
+                  },
                   icon: const Icon(Icons.keyboard),
                   label: Text(tr('manual')),
                 ),
@@ -389,6 +423,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const Divider(height: 32),
+                ListTile(
+                  leading: Icon(
+                    _licensing.active ? Icons.verified : Icons.lock_outline,
+                    color: _licensing.active ? Colors.green : null,
+                  ),
+                  title: Text(tr('subscription')),
+                  subtitle: Text(
+                    _licensing.license == null
+                        ? tr('sub_none_short')
+                        : tr('sub_short', {
+                            'n': _licensing.license!.daysLeft(DateTime.now()),
+                          }),
+                  ),
+                  onTap: _subscription,
+                ),
                 if (_kid != null)
                   ListTile(
                     leading: const Icon(Icons.phonelink_lock),
