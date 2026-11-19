@@ -8,6 +8,9 @@ class FamilyStore {
   FamilyStore._(this._p);
   final SharedPreferences _p;
 
+  /// For app settings kept next to the family (crash report consent).
+  SharedPreferences get prefs => _p;
+
   static Future<FamilyStore> open() async {
     final s = FamilyStore._(await SharedPreferences.getInstance());
     if (s._p.getString('fam_id') == null) {
@@ -17,6 +20,18 @@ class FamilyStore {
     }
     return s;
   }
+
+  /// The family's licence (`GL1.` code), as the server signed it.
+  String? get license => _p.getString('license');
+  Future<void> setLicense(String code) => _p.setString('license', code);
+
+  DateTime? get lastRefresh {
+    final t = _p.getInt('license_refresh');
+    return t == null ? null : DateTime.fromMillisecondsSinceEpoch(t);
+  }
+
+  Future<void> setLastRefresh(DateTime t) =>
+      _p.setInt('license_refresh', t.millisecondsSinceEpoch);
 
   FamilyKey get key =>
       FamilyKey.decode(_p.getString('fam_id')!, _p.getString('fam_key')!);
@@ -75,11 +90,40 @@ class FamilyStore {
       ?LessonReport.decode(s, key),
   ];
 
+  /// Keeps the last 50; the same report read twice is kept once.
   Future<void> addReport(String code) async {
-    await _p.setStringList('reports', [
-      code,
-      ...?_p.getStringList('reports')?.take(49),
+    final old = (_p.getStringList('reports') ?? const <String>[])
+        .where((c) => c != code)
+        .take(49);
+    await _p.setStringList('reports', [code, ...old]);
+  }
+
+  /// The whole family, for the new phone.
+  FamilyTransfer exportFamily() => FamilyTransfer(
+    key: key,
+    kids: kids,
+    license: license,
+    seq: _p.getInt('seq') ?? 0,
+  );
+
+  /// Takes over the family from the old phone. This phone's own family
+  /// (if it had one) is replaced, with its sent packets and reports.
+  Future<void> importFamily(FamilyTransfer t) async {
+    await _p.setString('fam_id', t.key.id);
+    await _p.setString('fam_key', t.key.encodedSecret);
+    await _p.setStringList('kids', [
+      for (final k in t.kids) jsonEncode(k.toJson()),
     ]);
+    if (t.license != null) {
+      await _p.setString('license', t.license!);
+    } else {
+      await _p.remove('license');
+    }
+    await _p.remove('license_refresh');
+    final seq = _p.getInt('seq') ?? 0;
+    await _p.setInt('seq', t.seq > seq ? t.seq : seq);
+    await _p.remove('sent');
+    await _p.remove('reports');
   }
 
   String? get lang => _p.getString('lang');

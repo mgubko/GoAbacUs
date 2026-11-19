@@ -66,10 +66,43 @@ class Lesson extends ChangeNotifier {
        available =
            available ??
            {for (final a in kid?.aids ?? const <String>{}) ?Aid.byName(a)},
-       tasks = _order(packet.tasks) {
+       tasks = _order(packet.tasks.where((t) => playable(t, rows)).toList()),
+       unplayable = [
+         for (final t in packet.tasks)
+           if (!playable(t, rows)) t,
+       ] {
     _results.addAll(List.filled(tasks.length, null));
+    if (tasks.isEmpty) {
+      phase = Phase.done;
+      say = const Say('done');
+      return;
+    }
     _startQuestion();
   }
+
+  /// Tasks the lesson can lead: whole numbers that fit the screen abacus,
+  /// no division by zero. A misread page can hold anything; such tasks are
+  /// left out of the lesson and reported as not done.
+  static bool playable(Task t, int rows) {
+    final max = math.pow(10, rows).toInt() - 1;
+    bool fits(int n) => n >= 0 && n <= max;
+    try {
+      final qs = t.questions;
+      if (qs.isEmpty) return false;
+      for (final q in qs) {
+        if (q.op == Op.div && q.b == 0) return false;
+        if (!fits(q.a) || !fits(q.b) || !fits(q.result) || !fits(q.answer)) {
+          return false;
+        }
+      }
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Tasks left out (see [playable]).
+  final List<Task> unplayable;
 
   final TaskPacket packet;
   final int rows;
@@ -132,7 +165,10 @@ class Lesson extends ChangeNotifier {
   final answers = <int>[];
 
   final _results = <TaskResult?>[];
-  List<TaskResult> get results => [for (final r in _results) ?r];
+  List<TaskResult> get results => [
+    for (final r in _results) ?r,
+    for (final t in unplayable) TaskResult(n: t.n, solved: false, tries: 0),
+  ];
 
   Task get task => tasks[taskIndex];
   Question get question => task.questions[questionIndex];
@@ -635,11 +671,12 @@ class Lesson extends ChangeNotifier {
     return false;
   }
 
-  LessonReport report() => LessonReport(
+  LessonReport report({List<String> errors = const []}) => LessonReport(
     family: packet.family,
     kid: packet.kid,
     packet: packet.id,
     results: results,
     finished: DateTime.now(),
+    errors: errors,
   );
 }

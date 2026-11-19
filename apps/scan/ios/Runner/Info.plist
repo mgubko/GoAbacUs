@@ -2,6 +2,23 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.goabacus.scan</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>goabacus-scan</string>
+			</array>
+		</dict>
+	</array>
+	<key>FlutterDeepLinkingEnabled</key>
+	<false/>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>goabacus-tutor</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>Photographs homework pages and reads the report QR code from the child's device. Photos stay on this phone.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

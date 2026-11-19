@@ -131,9 +131,10 @@ class _LessonScreenState extends State<LessonScreen> {
           _abacus.highlightRow = null;
           Future.delayed(const Duration(milliseconds: 1600), () {
             if (!mounted) return;
-            final wasLast = _lesson.questionIndex + 1 >=
-                _lesson.task.questions.length;
-            final continues = !wasLast &&
+            final wasLast =
+                _lesson.questionIndex + 1 >= _lesson.task.questions.length;
+            final continues =
+                !wasLast &&
                 _lesson.task.questions[_lesson.questionIndex + 1].continues;
             _lesson.next();
             if (!continues && _lesson.phase != Phase.done) {
@@ -173,22 +174,28 @@ class _LessonScreenState extends State<LessonScreen> {
       maintainState: true,
       maintainAnimation: true,
       maintainSize: true,
-      child: AbacusView(controller: _abacus),
+      // A screen reader names the abacus but does not read its value: the
+      // child is meant to count the beads.
+      child: Semantics(
+        label: tr('name_abacus'),
+        child: AbacusView(controller: _abacus),
+      ),
     );
     Widget? over;
     if (l.aidHidden) {
       over = _EyesClosed(aid: l.choice.aid);
     } else if (!showAbacus) {
-      over = AidPicture(
-        aid: l.choice.aid,
-        question: l.question,
-        reveal: l.reveal,
+      over = Semantics(
+        image: true,
+        label: tr('name_${l.choice.aid.name}'),
+        child: AidPicture(
+          aid: l.choice.aid,
+          question: l.question,
+          reveal: l.reveal,
+        ),
       );
     }
-    return Stack(
-      fit: StackFit.expand,
-      children: [abacus, ?over],
-    );
+    return Stack(fit: StackFit.expand, children: [abacus, ?over]);
   }
 
   @override
@@ -199,9 +206,7 @@ class _LessonScreenState extends State<LessonScreen> {
       backgroundColor: const Color(0xFFE9DCC6),
       appBar: AppBar(
         backgroundColor: const Color(0xFFE9DCC6),
-        title: Text(
-          tr('task_of', {'n': l.number, 'total': l.tasks.length}),
-        ),
+        title: Text(tr('task_of', {'n': l.number, 'total': l.tasks.length})),
         actions: [
           ValueListenableBuilder(
             valueListenable: Voice.on,
@@ -225,33 +230,58 @@ class _LessonScreenState extends State<LessonScreen> {
         ],
       ),
       body: SafeArea(
-        child: Column(
-          children: [
-            _TaskCard(lesson: l, typed: _typed),
-            GestureDetector(
-              // Tap the owl's words to hear them again.
-              onTap: () => _voice.repeat(appLang.value),
-              child: _Bubble(text: saying(l.say), happy: l.phase == Phase.right),
-            ),
-            _AidBar(
-              lesson: l,
-              onSwitch: l.phase == Phase.answer || l.phase == Phase.setStart
-                  ? l.switchAid
-                  : null,
-            ),
-            Expanded(child: _aidArea()),
-            _Tools(
-              onHint: l.phase == Phase.demo || l.phase == Phase.right
-                  ? null
-                  : _hint,
-              onSimilar: l.phase == Phase.demo || l.phase == Phase.right
-                  ? null
-                  : _similar,
-              onClear: l.phase == Phase.demo || !l.usesAbacus ? null : _abacus.clear,
-              nudge: _nudge,
-            ),
-            _Keypad(onKey: _key),
-          ],
+        child: LayoutBuilder(
+          // Small phones and large text: the task and the owl's words get
+          // a share of the height and scroll inside it; the abacus keeps
+          // the rest.
+          builder: (context, box) => Column(
+            children: [
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: box.maxHeight * 0.2),
+                child: SingleChildScrollView(
+                  child: _TaskCard(lesson: l, typed: _typed),
+                ),
+              ),
+              ConstrainedBox(
+                constraints: BoxConstraints(maxHeight: box.maxHeight * 0.2),
+                child: SingleChildScrollView(
+                  child: GestureDetector(
+                    // Tap the owl's words to hear them again.
+                    onTap: () => _voice.repeat(appLang.value),
+                    excludeFromSemantics: true,
+                    child: _Bubble(
+                      onTap: () => _voice.repeat(appLang.value),
+                      text: saying(l.say),
+                      happy: l.phase == Phase.right,
+                    ),
+                  ),
+                ),
+              ),
+              _AidBar(
+                lesson: l,
+                onSwitch: l.phase == Phase.answer || l.phase == Phase.setStart
+                    ? l.switchAid
+                    : null,
+              ),
+              Expanded(child: _aidArea()),
+              _Tools(
+                onHint: l.phase == Phase.demo || l.phase == Phase.right
+                    ? null
+                    : _hint,
+                onSimilar: l.phase == Phase.demo || l.phase == Phase.right
+                    ? null
+                    : _similar,
+                onClear: l.phase == Phase.demo || !l.usesAbacus
+                    ? null
+                    : _abacus.clear,
+                nudge: _nudge,
+              ),
+              _Keypad(
+                onKey: _key,
+                keyHeight: (box.maxHeight * 0.065).clamp(48.0, 56.0),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -279,18 +309,23 @@ class _AidBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
         children: [
-          Chip(
-            avatar: Text(icon),
-            label: Text(
-              '${tr('name_${c.aid.name}')} · ${tr('stage_name_${c.stage.name}')}',
+          Flexible(
+            child: Chip(
+              avatar: ExcludeSemantics(child: Text(icon)),
+              label: Text(
+                '${tr('name_${c.aid.name}')} · ${tr('stage_name_${c.stage.name}')}',
+                overflow: TextOverflow.ellipsis,
+              ),
+              backgroundColor: const Color(0xFFFDFAF1),
             ),
-            backgroundColor: const Color(0xFFFDFAF1),
           ),
-          const Spacer(),
-          TextButton.icon(
-            onPressed: onSwitch,
-            icon: const Icon(Icons.swap_horiz),
-            label: Text(tr('switch_aid')),
+          const SizedBox(width: 8),
+          Flexible(
+            child: TextButton.icon(
+              onPressed: onSwitch,
+              icon: const Icon(Icons.swap_horiz),
+              label: Text(tr('switch_aid'), overflow: TextOverflow.ellipsis),
+            ),
           ),
         ],
       ),
@@ -340,19 +375,16 @@ class _TaskCard extends StatelessWidget {
       fontWeight: FontWeight.w700,
       color: const Color(0xFF402A1A),
     );
-    final small = Theme.of(context).textTheme.titleMedium!.copyWith(
-      color: const Color(0xFF6B4E3A),
-    );
+    final small = Theme.of(
+      context,
+    ).textTheme.titleMedium!.copyWith(color: const Color(0xFF6B4E3A));
     final lines = <Widget>[];
     if (t is StepsTask || t is ChainTask || t is HouseTask) {
       lines.add(Text(t.format(), style: small));
       for (var i = 0; i < lesson.questionIndex; i++) {
         final done = t.questions[i];
         lines.add(
-          Text(
-            done.format().replaceFirst('?', '${done.answer}'),
-            style: small,
-          ),
+          Text(done.format().replaceFirst('?', '${done.answer}'), style: small),
         );
       }
     }
@@ -377,9 +409,10 @@ class _TaskCard extends StatelessWidget {
 }
 
 class _Bubble extends StatelessWidget {
-  const _Bubble({required this.text, required this.happy});
+  const _Bubble({required this.text, required this.happy, this.onTap});
   final String text;
   final bool happy;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -388,7 +421,12 @@ class _Bubble extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(happy ? '🦉✨' : '🦉', style: const TextStyle(fontSize: 34)),
+          ExcludeSemantics(
+            child: Text(
+              happy ? '🦉✨' : '🦉',
+              style: const TextStyle(fontSize: 34),
+            ),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: AnimatedSwitcher(
@@ -406,7 +444,13 @@ class _Bubble extends StatelessWidget {
                       : const Color(0xFFFFF4D6),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(text, style: const TextStyle(fontSize: 18)),
+                // A screen reader reads each new instruction by itself.
+                child: Semantics(
+                  liveRegion: true,
+                  onTap: onTap,
+                  onTapHint: tr('repeat_hint'),
+                  child: Text(text, style: const TextStyle(fontSize: 18)),
+                ),
               ),
             ),
           ),
@@ -433,28 +477,37 @@ class _Tools extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
-          FilledButton.tonalIcon(
-            onPressed: onHint,
-            style: nudge
-                ? FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFD36B),
-                  )
-                : null,
-            icon: const Icon(Icons.lightbulb_outline),
-            label: Text(tr('hint')),
-          ),
-          FilledButton.tonalIcon(
-            onPressed: onSimilar,
-            icon: const Icon(Icons.play_circle_outline),
-            label: Text(tr('similar')),
-          ),
-          FilledButton.tonalIcon(
-            onPressed: onClear,
-            icon: const Icon(Icons.cleaning_services_outlined),
-            label: Text(tr('clear')),
-          ),
+          for (final (i, (on, icon, label)) in [
+            (onHint, Icons.lightbulb_outline, tr('hint')),
+            (onSimilar, Icons.play_circle_outline, tr('similar')),
+            (onClear, Icons.cleaning_services_outlined, tr('clear')),
+          ].indexed)
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 3),
+                child: FilledButton.tonal(
+                  onPressed: on,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 6),
+                    backgroundColor: i == 0 && nudge
+                        ? const Color(0xFFFFD36B)
+                        : null,
+                  ),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(icon, size: 20),
+                        const SizedBox(width: 4),
+                        Text(label),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -462,16 +515,17 @@ class _Tools extends StatelessWidget {
 }
 
 class _Keypad extends StatelessWidget {
-  const _Keypad({required this.onKey});
+  const _Keypad({required this.onKey, this.keyHeight = 52});
   final void Function(String) onKey;
+  final double keyHeight;
 
   @override
   Widget build(BuildContext context) {
     Widget key(String k) => Expanded(
       child: Padding(
-        padding: const EdgeInsets.all(3),
+        padding: const EdgeInsets.symmetric(horizontal: 1.5, vertical: 2),
         child: SizedBox(
-          height: 52,
+          height: keyHeight,
           child: FilledButton(
             style: FilledButton.styleFrom(
               backgroundColor: k == 'OK'
@@ -483,17 +537,25 @@ class _Keypad extends StatelessWidget {
               ),
             ),
             onPressed: () => onKey(k),
-            child: Text(k, style: const TextStyle(fontSize: 24)),
+            child: Text(
+              k,
+              style: const TextStyle(fontSize: 24),
+              semanticsLabel: k == '⌫' ? tr('erase') : null,
+            ),
           ),
         ),
       ),
     );
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 6),
       child: Column(
         children: [
           Row(children: [for (final k in '12345⌫'.characters) key(k)]),
-          Row(children: [for (final k in ['6', '7', '8', '9', '0', 'OK']) key(k)]),
+          Row(
+            children: [
+              for (final k in ['6', '7', '8', '9', '0', 'OK']) key(k),
+            ],
+          ),
         ],
       ),
     );

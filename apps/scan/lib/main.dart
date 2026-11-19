@@ -1,12 +1,21 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
+import 'package:url_launcher/url_launcher.dart';
 
+import 'crash_reports.dart';
+import 'errors.dart';
+import 'license.dart';
 import 'qr.dart';
 import 'recognize.dart';
 import 'review_screen.dart';
 import 'store.dart';
+import 'subscription_screen.dart';
 import 'strings.dart';
 
 /// GoAbacUs Scan: the parent's app. Photographs a homework page, reads it
@@ -14,7 +23,9 @@ import 'strings.dart';
 /// child's tutor as a QR code.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ErrorLog.install();
   final store = await FamilyStore.open();
+  await CrashReports.start(store.prefs);
   appLang.value =
       store.lang ??
       (languages.containsKey(PlatformDispatcher.instance.locale.languageCode)
@@ -57,6 +68,75 @@ class _HomeScreenState extends State<HomeScreen> {
   FamilyStore get store => widget.store;
   late Kid? _kid = store.kids.firstOrNull;
   bool _busy = false;
+  StreamSubscription<Uri>? _links;
+  late final _licensing = Licensing(store)..addListener(_changed);
+
+  void _changed() {
+    if (mounted) setState(() {});
+  }
+
+  /// Recognising pages and sending tasks need a subscription.
+  Future<bool> _needLicense() async {
+    if (_licensing.active) return true;
+    await _subscription();
+    return _licensing.active;
+  }
+
+  Future<void> _subscription({String? code}) => Navigator.of(context).push(
+    MaterialPageRoute(
+      builder: (_) => SubscriptionScreen(licensing: _licensing, code: code),
+    ),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    // The tutor on this phone hands the report back by an app link.
+    _links = AppLinks().uriLinkStream.listen(_onLink, onError: (_) {});
+    _licensing.refreshIfDue();
+  }
+
+  @override
+  void dispose() {
+    _links?.cancel();
+    _licensing.dispose();
+    super.dispose();
+  }
+
+  Future<void> _onLink(Uri uri) async {
+    final kit = Handoff.parse(uri)?.activation;
+    if (kit != null) {
+      Navigator.of(context).popUntil((r) => r.isFirst);
+      await _subscription(code: kit);
+      return;
+    }
+    final code = Handoff.parse(uri)?.report;
+    if (code == null) return;
+    final r = LessonReport.decode(code, store.key);
+    if (r == null) return;
+    await store.addReport(code);
+    if (!mounted) return;
+    setState(() {});
+    _openReport(r);
+  }
+
+  /// The parent gives this phone to the child: open the tutor here with
+  /// the tasks (and the pairing, in case the tutor is new on this phone).
+  Future<void> _onThisPhone(Kid kid, {String? packet}) async {
+    final uri = Handoff(
+      pairing: Pairing(store.key, kid).encode(),
+      packet: packet,
+    ).toTutor();
+    var ok = false;
+    try {
+      ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr('no_tutor_here'))),
+      );
+    }
+  }
 
   Future<void> _addKid() async {
     final kid = await showDialog<Kid>(
@@ -87,6 +167,13 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         actions: [
           TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _onThisPhone(kid);
+            },
+            child: Text(tr('this_phone')),
+          ),
+          TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('OK'),
           ),
@@ -97,6 +184,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fromCamera(ImageSource source) async {
     if (_kid == null) return _needKid();
+    if (!await _needLicense()) return;
     // 1600 px is plenty for print; the parser scales to its own size.
     final file = await ImagePicker().pickImage(
       source: source,
@@ -137,7 +225,9 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
     if (r == null || !mounted) return;
+    if (!await _needLicense() || !mounted) return;
     final packet = TaskPacket(
+      license: store.license,
       family: store.key.id,
       kid: _kid!.id,
       id: await store.nextPacketId(),
@@ -172,11 +262,124 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(tr('qr_text'), textAlign: TextAlign.center),
+                  const SizedBox(height: 24),
+                  if (store.kids.where((k) => k.id == p.kid).firstOrNull
+                      case final kid?)
+                    FilledButton.icon(
+                      onPressed: () => _onThisPhone(kid, packet: code),
+                      icon: const Icon(Icons.child_care),
+                      label: Text(tr('continue_here')),
+                    ),
+                  const SizedBox(height: 8),
+                  Text(
+                    tr('continue_here_text'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ],
               ),
             ),
           ),
         ),
+      ),
+    );
+  }
+
+  /// Turning reports on asks first and says what is sent; off is instant.
+  Future<void> _toggleCrashReports() async {
+    if (CrashReports.on.value) {
+      await CrashReports.set(store.prefs, false);
+      if (mounted) setState(() {});
+      return;
+    }
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr('crash_reports')),
+        content: SingleChildScrollView(child: Text(tr('crash_reports_text'))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(tr('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(tr('crash_reports_on')),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await CrashReports.set(store.prefs, true);
+    if (mounted) setState(() {});
+  }
+
+  /// The old phone: the family as a QR code, for a few minutes.
+  void _moveOut() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr('move_out')),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              QrCodes(store.exportFamily().encode(), size: 240),
+              const SizedBox(height: 8),
+              Text(tr('move_out_text')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(tr('cancel')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The new phone: reads the old phone's code and takes the family over.
+  Future<void> _moveIn() async {
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => QrScanPage(
+          title: tr('move_in'),
+          hint: tr('move_in_hint'),
+          accept: (c) =>
+              FamilyTransfer.decode(c) == null ? tr('move_bad') : null,
+        ),
+      ),
+    );
+    if (code == null || !mounted) return;
+    final t = FamilyTransfer.decode(code);
+    if (t == null) return;
+    if (t.key.id != store.key.id && store.kids.isNotEmpty) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(tr('move_replace')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(tr('cancel')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(tr('move_in')),
+            ),
+          ],
+        ),
+      );
+      if (ok != true) return;
+    }
+    await store.importFamily(t);
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(tr('move_done', {'n': t.kids.length})),
       ),
     );
   }
@@ -228,6 +431,20 @@ class _HomeScreenState extends State<HomeScreen> {
                     ].join(' · '),
                   ),
                 ),
+              if (r.errors.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.bug_report_outlined),
+                  title: Text(tr('child_errors', {'n': r.errors.length})),
+                  subtitle: Text(tr('child_errors_text')),
+                  onTap: () {
+                    Clipboard.setData(
+                      ClipboardData(text: r.errors.join('\n')),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(tr('copied'))),
+                    );
+                  },
+                ),
             ],
           ),
         ),
@@ -249,6 +466,24 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(tr('app')),
         actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (v) => switch (v) {
+              'out' => _moveOut(),
+              'in' => _moveIn(),
+              _ => _toggleCrashReports(),
+            },
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'out', child: Text(tr('move_out'))),
+              PopupMenuItem(value: 'in', child: Text(tr('move_in'))),
+              if (CrashReports.available)
+                CheckedPopupMenuItem(
+                  value: 'crash',
+                  checked: CrashReports.on.value,
+                  child: Text(tr('crash_reports')),
+                ),
+            ],
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.language),
             onSelected: (l) {
@@ -310,7 +545,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
-                  onPressed: () => _kid == null ? _needKid() : _review([]),
+                  onPressed: () async {
+                    if (_kid == null) return _needKid();
+                    if (await _needLicense()) await _review([]);
+                  },
                   icon: const Icon(Icons.keyboard),
                   label: Text(tr('manual')),
                 ),
@@ -321,6 +559,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   textAlign: TextAlign.center,
                 ),
                 const Divider(height: 32),
+                ListTile(
+                  leading: Icon(
+                    _licensing.active ? Icons.verified : Icons.lock_outline,
+                    color: _licensing.active ? Colors.green : null,
+                  ),
+                  title: Text(tr('subscription')),
+                  subtitle: Text(
+                    _licensing.license == null
+                        ? tr('sub_none_short')
+                        : tr('sub_short', {
+                            'n': _licensing.license!.daysLeft(DateTime.now()),
+                          }),
+                  ),
+                  onTap: _subscription,
+                ),
                 if (_kid != null)
                   ListTile(
                     leading: const Icon(Icons.phonelink_lock),

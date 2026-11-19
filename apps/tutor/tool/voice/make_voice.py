@@ -35,7 +35,13 @@ API = "https://generativelanguage.googleapis.com/v1beta/models/{}:generateConten
 TTS_MODEL = os.environ.get("TTS_MODEL", "gemini-3.1-flash-tts-preview")
 STT_MODEL = os.environ.get("STT_MODEL", "gemini-3.5-flash")
 VOICE = os.environ.get("TTS_VOICE", "Leda")
-LANG_NAME = {"ru": "Russian", "de": "German", "en": "English"}
+LANG_NAME = {
+    "ru": "Russian",
+    "de": "German",
+    "en": "English",
+    "fr": "French",
+    "es": "Spanish",
+}
 
 
 def call(model, body, tries=6):
@@ -87,7 +93,29 @@ _WORDS = {
         "_ one_hundred two_hundred three_hundred four_hundred five_hundred "
         "six_hundred seven_hundred eight_hundred nine_hundred".split(),
     ),
+    "fr": (
+        "zéro un deux trois quatre cinq six sept huit neuf dix onze douze "
+        "treize quatorze quinze seize dix-sept dix-huit dix-neuf".split(),
+        "_ _ vingt trente quarante cinquante soixante soixante quatre-vingt "
+        "quatre-vingt".split(),
+        "_ cent deux_cents trois_cents quatre_cents cinq_cents six_cents "
+        "sept_cents huit_cents neuf_cents".split(),
+    ),
+    "es": (
+        "cero uno dos tres cuatro cinco seis siete ocho nueve diez once doce "
+        "trece catorce quince dieciséis diecisiete dieciocho "
+        "diecinueve".split(),
+        "_ _ veinte treinta cuarenta cincuenta sesenta setenta ochenta "
+        "noventa".split(),
+        "_ cien doscientos trescientos cuatrocientos quinientos seiscientos "
+        "setecientos ochocientos novecientos".split(),
+    ),
 }
+
+_ES_20S = (
+    "veinte veintiuno veintidós veintitrés veinticuatro veinticinco "
+    "veintiséis veintisiete veintiocho veintinueve".split()
+)
 
 
 def number_words(n, lang):
@@ -99,8 +127,22 @@ def number_words(n, lang):
     if n % 100 == 0:
         return hundreds[n // 100].replace("_", " ")
     t, o = divmod(n, 10)
+    if lang == "fr":
+        if n == 80:
+            return "quatre-vingts"
+        if t in (7, 9):  # soixante-dix, quatre-vingt-onze
+            o += 10
+        if o == 0:
+            return tens[t]
+        if o in (1, 11) and t < 8:
+            return f"{tens[t]} et {ones[o]}"
+        return f"{tens[t]}-{ones[o]}"
+    if lang == "es" and t == 2:
+        return _ES_20S[o]
     if o == 0:
         return tens[t]
+    if lang == "es":
+        return f"{tens[t]} y {ones[o]}"
     if lang == "de":
         return ("ein" if o == 1 else ones[o]) + "und" + tens[t]
     if lang == "en":

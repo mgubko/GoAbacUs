@@ -33,6 +33,12 @@ Shared code:
 3. After the lesson the child's device shows the report QR code; parent:
    *Read the child's report*.
 
+One phone for both: on the task QR screen the parent taps *Continue on this
+phone*; Scan opens the tutor by the app link `goabacus-tutor://open` with the
+pairing and the task packet, and the lesson starts. At the end *Give the phone
+back* opens Scan with the report (`goabacus-scan://open`). Same signed codes,
+no network.
+
 The child's app also has *Try with sample tasks* and a free abacus.
 
 ## Teaching aids

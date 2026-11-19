@@ -130,7 +130,9 @@ class TaskPacket {
     required this.tasks,
     this.lang = 'de',
     this.source = '',
-  });
+    this.license,
+    DateTime? issued,
+  }) : issued = issued ?? DateTime.now().toUtc();
 
   final String family;
   final int kid;
@@ -143,6 +145,12 @@ class TaskPacket {
   final String source;
   final List<Task> tasks;
 
+  /// The family's licence (`GL1.` code) at the time the parent sent it.
+  final String? license;
+
+  /// When the parent made the packet.
+  final DateTime issued;
+
   Map<String, Object?> toJson() => {
     'v': 1,
     'fam': family,
@@ -151,6 +159,8 @@ class TaskPacket {
     'lang': lang,
     if (source.isNotEmpty) 'src': source,
     'tasks': [for (final t in tasks) t.toJson()],
+    'at': issued.millisecondsSinceEpoch ~/ 1000,
+    'lic': ?license,
   };
 
   static TaskPacket fromJson(Map<String, Object?> j) => TaskPacket(
@@ -159,8 +169,16 @@ class TaskPacket {
     id: j['id'] as String,
     lang: (j['lang'] as String?) ?? 'de',
     source: (j['src'] as String?) ?? '',
+    license: j['lic'] as String?,
+    issued: j['at'] is int
+        ? DateTime.fromMillisecondsSinceEpoch(
+            (j['at'] as int) * 1000,
+            isUtc: true,
+          )
+        : null,
     tasks: [
-      for (final t in j['tasks'] as List) Task.fromJson(t as Map<String, Object?>),
+      for (final t in j['tasks'] as List)
+        Task.fromJson(t as Map<String, Object?>),
     ],
   );
 
@@ -235,6 +253,7 @@ class LessonReport {
     required this.packet,
     required this.results,
     required this.finished,
+    this.errors = const [],
   });
 
   final String family;
@@ -242,6 +261,10 @@ class LessonReport {
   final String packet;
   final List<TaskResult> results;
   final DateTime finished;
+
+  /// Short error summaries from the child's app since the last report (at
+  /// most 3), for support; the parent decides whether to send them.
+  final List<String> errors;
 
   static const prefix = 'GR1.';
 
@@ -252,6 +275,7 @@ class LessonReport {
     'p': packet,
     'at': finished.millisecondsSinceEpoch ~/ 1000,
     'r': [for (final r in results) r.toJson()],
+    if (errors.isNotEmpty) 'x': errors.take(3).toList(),
   };
 
   static LessonReport fromJson(Map<String, Object?> j) => LessonReport(
@@ -260,8 +284,10 @@ class LessonReport {
     packet: j['p'] as String,
     finished: DateTime.fromMillisecondsSinceEpoch((j['at'] as int) * 1000),
     results: [
-      for (final r in j['r'] as List) TaskResult.fromJson(r as Map<String, Object?>),
+      for (final r in j['r'] as List)
+        TaskResult.fromJson(r as Map<String, Object?>),
     ],
+    errors: [for (final e in (j['x'] as List?) ?? const []) '$e'],
   );
 
   String encode(FamilyKey key) => _seal(prefix, toJson(), key);
@@ -278,7 +304,10 @@ class LessonReport {
 }
 
 String _seal(String prefix, Map<String, Object?> json, FamilyKey key) {
-  final body = ZLibEncoder().encodeBytes(utf8.encode(jsonEncode(json)), level: 9);
+  final body = ZLibEncoder().encodeBytes(
+    utf8.encode(jsonEncode(json)),
+    level: 9,
+  );
   return '$prefix${_b64(body)}.${_b64(key.sign(body))}';
 }
 
