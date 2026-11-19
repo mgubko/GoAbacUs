@@ -240,9 +240,13 @@ class FirestoreStore implements Store {
       fields: {
         for (final e in j.entries)
           if (e.value != null)
-            e.key: e.value is int
-                ? fs.Value(integerValue: '${e.value}')
-                : fs.Value(stringValue: '${e.value}'),
+            e.key: switch (e.value) {
+              final int v => fs.Value(integerValue: '$v'),
+              final DateTime v => fs.Value(
+                timestampValue: v.toUtc().toIso8601String(),
+              ),
+              final v => fs.Value(stringValue: '$v'),
+            },
       },
     ),
     _doc(col, id),
@@ -307,6 +311,15 @@ class FirestoreStore implements Store {
     return j == null ? null : FamilyRecord.fromJson(id, j);
   }
 
+  /// A family is deleted by itself (Firestore TTL policy on `expireAt`)
+  /// [keepFamilies] after its licence ended, as the privacy policy says.
   @override
-  Future<void> putFamily(FamilyRecord f) => _put('families', f.id, f.toJson());
+  Future<void> putFamily(FamilyRecord f) => _put('families', f.id, {
+    ...f.toJson(),
+    'expireAt': f.until.add(keepFamilies),
+  });
 }
+
+/// How long a family's record stays after its licence ended: a family
+/// that comes back within two years keeps its kit days.
+const keepFamilies = Duration(days: 730);

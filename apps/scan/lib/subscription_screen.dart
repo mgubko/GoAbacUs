@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 
 import 'license.dart';
@@ -28,7 +29,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
     super.initState();
     l.addListener(_changed);
     l.loadProducts();
-    if (widget.code != null) WidgetsBinding.instance.addPostFrameCallback((_) => _redeem());
+    if (widget.code != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) => _redeem());
+    }
   }
 
   @override
@@ -43,9 +46,9 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
   Future<void> _redeem() async {
     if (_code.text.trim().isEmpty) return;
     if (await l.redeem(_code.text) && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr('code_ok'))),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(tr('code_ok'))));
     }
   }
 
@@ -157,6 +160,23 @@ class _SubscriptionScreenState extends State<SubscriptionScreen> {
             child: Text(tr('restore')),
           ),
           if (l.busy) const LinearProgressIndicator(),
+          const SizedBox(height: 16),
+          // For support and for data requests (the privacy policy asks
+          // for it): the server knows the family only by this id.
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            title: Text(
+              tr('family_id', {'id': l.store.key.id}),
+              style: theme.textTheme.bodySmall,
+            ),
+            trailing: const Icon(Icons.copy, size: 18),
+            onTap: () {
+              Clipboard.setData(ClipboardData(text: l.store.key.id));
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(tr('copied'))));
+            },
+          ),
           if (kDebugMode) ...[
             const Divider(height: 32),
             OutlinedButton(

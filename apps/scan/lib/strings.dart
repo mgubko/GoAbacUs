@@ -69,14 +69,18 @@ const _t = <String, Map<String, String>>{
     'save': 'Сохранить',
     'qr_title': 'Покажите код ребёнку',
     'continue_here': 'Продолжить на этом телефоне',
-    'continue_here_text': 'Если репетитор стоит на этом же телефоне: откроется занятие, отдайте телефон ребёнку. Отчёт вернётся сюда сам.',
+    'continue_here_text':
+        'Если репетитор стоит на этом же телефоне: откроется занятие, отдайте телефон ребёнку. Отчёт вернётся сюда сам.',
     'this_phone': 'На этом телефоне',
-    'no_tutor_here': 'На этом телефоне нет GoAbacUs Tutor. Установите его или покажите код другому устройству.',
+    'no_tutor_here':
+        'На этом телефоне нет GoAbacUs Tutor. Установите его или покажите код другому устройству.',
     'subscription': 'Подписка',
-    'sub_none': 'Подписки пока нет. Введите код из набора или оформите подписку.',
+    'sub_none':
+        'Подписки пока нет. Введите код из набора или оформите подписку.',
     'sub_until': 'Действует до {date} (осталось дней: {n}). {plan}.',
     'sub_ended': 'Подписка закончилась {date}.',
-    'sub_why': 'Подписка нужна, чтобы распознавать задания и отправлять их ребёнку. Без неё репетитор ребёнка не откроет новые задания. Распознавание и занятия по-прежнему идут без интернета: сеть нужна только для активации и продления.',
+    'sub_why':
+        'Подписка нужна, чтобы распознавать задания и отправлять их ребёнку. Без неё репетитор ребёнка не откроет новые задания. Распознавание и занятия по-прежнему идут без интернета: сеть нужна только для активации и продления.',
     'sub_none_short': 'Нет: распознавание и отправка заданий закрыты',
     'sub_short': 'Осталось дней: {n}',
     'kit_code': 'Код из набора',
@@ -91,7 +95,8 @@ const _t = <String, Map<String, String>>{
     'plan_sub': 'Подписка',
     'plan_gift': 'Подарок',
     'lerr_no_server': 'Сервер подписок ещё не подключён в этой сборке.',
-    'lerr_offline': 'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.',
+    'lerr_offline':
+        'Нет связи с сервером. Проверьте интернет и попробуйте ещё раз.',
     'lerr_code_unknown': 'Такого кода нет. Проверьте буквы и цифры.',
     'lerr_code_used': 'Этот код уже активирован в другой семье.',
     'lerr_not_paid': 'Магазин не подтвердил оплату.',
@@ -100,7 +105,8 @@ const _t = <String, Map<String, String>>{
     'lerr_store_not_ready': 'Оплата через этот магазин ещё не подключена.',
     'lerr_store_error': 'Покупка не прошла.',
     'child_errors': 'В приложении ребёнка были сбои: {n}',
-    'child_errors_text': 'Нажмите, чтобы скопировать описание для поддержки. Там нет данных о ребёнке.',
+    'child_errors_text':
+        'Нажмите, чтобы скопировать описание для поддержки. Там нет данных о ребёнке.',
     'copied': 'Скопировано',
     'qr_text':
         'На устройстве ребёнка: «Получить задания» и навести камеру на этот код. Интернет не нужен.',
@@ -128,6 +134,7 @@ const _t = <String, Map<String, String>>{
     'w_room_bigger_than_roof': 'число больше крыши',
     'w_bad_floor': 'неверный этаж',
     'w_nothing_to_find': 'нечего искать',
+    'family_id': 'Номер семьи (для поддержки): {id}',
   },
   'de': {
     'app': 'GoAbacUs Scan',
@@ -178,18 +185,23 @@ const _t = <String, Map<String, String>>{
     'save': 'Speichern',
     'qr_title': 'Code dem Kind zeigen',
     'continue_here': 'Auf diesem Handy weitermachen',
-    'continue_here_text': 'Wenn der Tutor auf diesem Handy ist: Die Übung öffnet sich, geben Sie das Handy dem Kind. Der Bericht kommt von selbst zurück.',
+    'continue_here_text':
+        'Wenn der Tutor auf diesem Handy ist: Die Übung öffnet sich, geben Sie das Handy dem Kind. Der Bericht kommt von selbst zurück.',
     'this_phone': 'Auf diesem Handy',
-    'no_tutor_here': 'GoAbacUs Tutor ist auf diesem Handy nicht installiert. Installieren Sie ihn oder zeigen Sie den Code einem anderen Gerät.',
+    'no_tutor_here':
+        'GoAbacUs Tutor ist auf diesem Handy nicht installiert. Installieren Sie ihn oder zeigen Sie den Code einem anderen Gerät.',
     'subscription': 'Abo',
-    'sub_none': 'Noch kein Abo. Geben Sie den Code aus dem Set ein oder schließen Sie ein Abo ab.',
+    'sub_none':
+        'Noch kein Abo. Geben Sie den Code aus dem Set ein oder schließen Sie ein Abo ab.',
     'sub_until': 'Gültig bis {date} (noch {n} Tage). {plan}.',
     'sub_ended': 'Das Abo ist am {date} abgelaufen.',
-    'sub_why': 'Mit dem Abo werden Aufgaben erkannt und an das Kind geschickt. Ohne Abo öffnet der Tutor keine neuen Aufgaben. Erkennung und Übungen laufen weiter ohne Internet: das Netz braucht es nur zum Aktivieren und Verlängern.',
+    'sub_why':
+        'Mit dem Abo werden Aufgaben erkannt und an das Kind geschickt. Ohne Abo öffnet der Tutor keine neuen Aufgaben. Erkennung und Übungen laufen weiter ohne Internet: das Netz braucht es nur zum Aktivieren und Verlängern.',
     'sub_none_short': 'Keins: Erkennen und Senden gesperrt',
     'sub_short': 'Noch {n} Tage',
     'kit_code': 'Code aus dem Set',
-    'kit_code_hint': 'Richten Sie die Kamera auf den QR-Code auf der Karte in der Schachtel.',
+    'kit_code_hint':
+        'Richten Sie die Kamera auf den QR-Code auf der Karte in der Schachtel.',
     'scan_code': 'Code scannen',
     'activate': 'Aktivieren',
     'code_ok': 'Code angenommen, danke!',
@@ -199,31 +211,41 @@ const _t = <String, Map<String, String>>{
     'plan_kit': 'Code aus dem Set',
     'plan_sub': 'Abo',
     'plan_gift': 'Geschenk',
-    'lerr_no_server': 'Der Abo-Server ist in diesem Build noch nicht eingetragen.',
-    'lerr_offline': 'Keine Verbindung zum Server. Bitte Internet prüfen und erneut versuchen.',
-    'lerr_code_unknown': 'Diesen Code gibt es nicht. Bitte Buchstaben und Ziffern prüfen.',
-    'lerr_code_used': 'Dieser Code wurde schon von einer anderen Familie aktiviert.',
+    'lerr_no_server':
+        'Der Abo-Server ist in diesem Build noch nicht eingetragen.',
+    'lerr_offline':
+        'Keine Verbindung zum Server. Bitte Internet prüfen und erneut versuchen.',
+    'lerr_code_unknown':
+        'Diesen Code gibt es nicht. Bitte Buchstaben und Ziffern prüfen.',
+    'lerr_code_used':
+        'Dieser Code wurde schon von einer anderen Familie aktiviert.',
     'lerr_not_paid': 'Der Store hat die Zahlung nicht bestätigt.',
-    'lerr_family_mismatch': 'Fehler beim Familienschlüssel. Bitte Support kontaktieren.',
+    'lerr_family_mismatch':
+        'Fehler beim Familienschlüssel. Bitte Support kontaktieren.',
     'lerr_server_error': 'Serverfehler. Bitte später erneut versuchen.',
-    'lerr_store_not_ready': 'Zahlung über diesen Store ist noch nicht eingerichtet.',
+    'lerr_store_not_ready':
+        'Zahlung über diesen Store ist noch nicht eingerichtet.',
     'lerr_store_error': 'Der Kauf ist fehlgeschlagen.',
     'child_errors': 'Fehler in der App des Kindes: {n}',
-    'child_errors_text': 'Tippen, um die Beschreibung für den Support zu kopieren. Sie enthält keine Daten über das Kind.',
+    'child_errors_text':
+        'Tippen, um die Beschreibung für den Support zu kopieren. Sie enthält keine Daten über das Kind.',
     'copied': 'Kopiert',
     'qr_text':
         'Auf dem Gerät des Kindes „Aufgaben holen“ und die Kamera auf diesen Code richten. Kein Internet nötig.',
     'for_kid': 'Für: {name}',
     'read_report': 'Bericht des Kindes lesen',
-    'report_hint': 'Richten Sie die Kamera auf den Bericht-Code auf dem Gerät des Kindes.',
-    'not_ours': 'Dieser Code gehört zu einer anderen Familie oder ist beschädigt.',
+    'report_hint':
+        'Richten Sie die Kamera auf den Bericht-Code auf dem Gerät des Kindes.',
+    'not_ours':
+        'Dieser Code gehört zu einer anderen Familie oder ist beschädigt.',
     'reports': 'Berichte',
     'sent': 'Gesendet',
     'solved': '{n} von {total} gelöst',
     'hints': 'Tipps: {n}',
     'tries': 'Versuche: {n}',
     'no_kid': 'Bitte zuerst ein Kind hinzufügen.',
-    'local_note': 'Die Seite wird auf dem Handy gelesen, das Foto wird nirgendwohin gesendet.',
+    'local_note':
+        'Die Seite wird auf dem Handy gelesen, das Foto wird nirgendwohin gesendet.',
     'mistake_offByOne': 'um eins daneben',
     'mistake_placeValue': 'Zehner vergessen',
     'mistake_wrongOp': 'Rechenzeichen verwechselt',
@@ -237,6 +259,7 @@ const _t = <String, Map<String, String>>{
     'w_room_bigger_than_roof': 'Zahl größer als das Dach',
     'w_bad_floor': 'falsches Stockwerk',
     'w_nothing_to_find': 'nichts zu finden',
+    'family_id': 'Familien-ID (für den Support): {id}',
   },
   'en': {
     'app': 'GoAbacUs Scan',
@@ -267,9 +290,11 @@ const _t = <String, Map<String, String>>{
     'reading': 'Reading the page on the phone…',
     'read_failed': 'Could not read the page: {e}',
     'check': 'Is it right?',
-    'check_text': 'Compare the tasks with the page. Tap to correct, swipe to remove.',
+    'check_text':
+        'Compare the tasks with the page. Tap to correct, swipe to remove.',
     'found': 'Tasks found: {n}',
-    'nothing_found': 'No tasks I can read were found on the page. Please type them in.',
+    'nothing_found':
+        'No tasks I can read were found on the page. Please type them in.',
     'hard_page':
         'The page seems to hold tasks I cannot read yet (number houses, word problems). Please check and add them.',
     'source': 'Name (e.g. “Maths p. 34”)',
@@ -285,14 +310,18 @@ const _t = <String, Map<String, String>>{
     'save': 'Save',
     'qr_title': 'Show the code to the child',
     'continue_here': 'Continue on this phone',
-    'continue_here_text': 'If the tutor is on this phone: the lesson opens, hand the phone to your child. The report comes back here by itself.',
+    'continue_here_text':
+        'If the tutor is on this phone: the lesson opens, hand the phone to your child. The report comes back here by itself.',
     'this_phone': 'On this phone',
-    'no_tutor_here': 'GoAbacUs Tutor is not installed on this phone. Install it or show the code to another device.',
+    'no_tutor_here':
+        'GoAbacUs Tutor is not installed on this phone. Install it or show the code to another device.',
     'subscription': 'Subscription',
-    'sub_none': 'No subscription yet. Enter the code from the kit or subscribe.',
+    'sub_none':
+        'No subscription yet. Enter the code from the kit or subscribe.',
     'sub_until': 'Valid until {date} ({n} days left). {plan}.',
     'sub_ended': 'The subscription ended on {date}.',
-    'sub_why': 'The subscription lets you read pages and send tasks to your child. Without it the child’s tutor opens no new tasks. Reading and lessons still run without internet: the network is needed only to activate and renew.',
+    'sub_why':
+        'The subscription lets you read pages and send tasks to your child. Without it the child’s tutor opens no new tasks. Reading and lessons still run without internet: the network is needed only to activate and renew.',
     'sub_none_short': 'None: reading and sending tasks are locked',
     'sub_short': '{n} days left',
     'kit_code': 'Code from the kit',
@@ -307,7 +336,8 @@ const _t = <String, Map<String, String>>{
     'plan_sub': 'Subscription',
     'plan_gift': 'Gift',
     'lerr_no_server': 'The subscription server is not set in this build yet.',
-    'lerr_offline': 'Cannot reach the server. Check the internet and try again.',
+    'lerr_offline':
+        'Cannot reach the server. Check the internet and try again.',
     'lerr_code_unknown': 'No such code. Check the letters and digits.',
     'lerr_code_used': 'This code was already activated by another family.',
     'lerr_not_paid': 'The store did not confirm the payment.',
@@ -316,7 +346,8 @@ const _t = <String, Map<String, String>>{
     'lerr_store_not_ready': 'Payment through this store is not set up yet.',
     'lerr_store_error': 'The purchase failed.',
     'child_errors': 'Errors in the child’s app: {n}',
-    'child_errors_text': 'Tap to copy the description for support. It holds no data about your child.',
+    'child_errors_text':
+        'Tap to copy the description for support. It holds no data about your child.',
     'copied': 'Copied',
     'qr_text':
         'On the child’s device tap “Get tasks” and point the camera at this code. No internet needed.',
@@ -330,7 +361,8 @@ const _t = <String, Map<String, String>>{
     'hints': 'hints: {n}',
     'tries': 'tries: {n}',
     'no_kid': 'Please add a child first.',
-    'local_note': 'The page is read on the phone; the photo is not sent anywhere.',
+    'local_note':
+        'The page is read on the phone; the photo is not sent anywhere.',
     'mistake_offByOne': 'off by one',
     'mistake_placeValue': 'lost a ten',
     'mistake_wrongOp': 'wrong operation',
@@ -344,6 +376,7 @@ const _t = <String, Map<String, String>>{
     'w_room_bigger_than_roof': 'number bigger than the roof',
     'w_bad_floor': 'bad floor',
     'w_nothing_to_find': 'nothing to find',
+    'family_id': 'Family ID (for support): {id}',
   },
   'fr': {
     'app': 'GoAbacUs Scan',
@@ -366,22 +399,27 @@ const _t = <String, Map<String, String>>{
     'school_lang': 'Langue de l’école',
     'home_lang': 'Langue de la maison (le tuteur la parle)',
     'pair': 'Relier l’appareil de l’enfant',
-    'pair_text': 'Ouvrez GoAbacUs Tutor sur l’appareil de l’enfant, touchez « Scanner le code » et visez ce code. Il contient la clé de la famille : ne le montrez à personne d’autre.',
+    'pair_text':
+        'Ouvrez GoAbacUs Tutor sur l’appareil de l’enfant, touchez « Scanner le code » et visez ce code. Il contient la clé de la famille : ne le montrez à personne d’autre.',
     'photo': 'Photographier une page',
     'gallery': 'Choisir une photo',
     'manual': 'Saisir des exercices',
     'reading': 'Lecture de la page sur le téléphone…',
     'read_failed': 'Impossible de lire la page : {e}',
     'check': 'Est-ce juste ?',
-    'check_text': 'Comparez les exercices avec la page. Touchez pour corriger, glissez pour supprimer.',
+    'check_text':
+        'Comparez les exercices avec la page. Touchez pour corriger, glissez pour supprimer.',
     'found': 'Exercices trouvés : {n}',
-    'nothing_found': 'Aucun exercice lisible sur la page. Saisissez-les à la main.',
-    'hard_page': 'La page semble contenir des exercices que je ne sais pas encore lire (maisons des nombres, problèmes). Vérifiez et ajoutez-les.',
+    'nothing_found':
+        'Aucun exercice lisible sur la page. Saisissez-les à la main.',
+    'hard_page':
+        'La page semble contenir des exercices que je ne sais pas encore lire (maisons des nombres, problèmes). Vérifiez et ajoutez-les.',
     'source': 'Nom (par ex. « Maths p. 34 »)',
     'send': 'Envoyer à l’enfant',
     'add_task': 'Ajouter un exercice',
     'edit_task': 'Exercice',
-    'edit_help': 'Exemple : 8+5, 9+?=15, 7*6. « Par étapes » : un calcul avec passage de la dizaine que l’enfant fait en deux étapes (57+28 → 57+20, puis +8).',
+    'edit_help':
+        'Exemple : 8+5, 9+?=15, 7*6. « Par étapes » : un calcul avec passage de la dizaine que l’enfant fait en deux étapes (57+28 → 57+20, puis +8).',
     'type_eq': 'Exemple',
     'type_steps': 'Par étapes',
     'bad_task': 'Je ne comprends pas cet exercice',
@@ -389,14 +427,18 @@ const _t = <String, Map<String, String>>{
     'save': 'Enregistrer',
     'qr_title': 'Montrez le code à l’enfant',
     'continue_here': 'Continuer sur ce téléphone',
-    'continue_here_text': 'Si le tuteur est sur ce téléphone : la leçon s’ouvre, donnez le téléphone à votre enfant. Le bilan revient ici tout seul.',
+    'continue_here_text':
+        'Si le tuteur est sur ce téléphone : la leçon s’ouvre, donnez le téléphone à votre enfant. Le bilan revient ici tout seul.',
     'this_phone': 'Sur ce téléphone',
-    'no_tutor_here': 'GoAbacUs Tutor n’est pas installé sur ce téléphone. Installez-le ou montrez le code à un autre appareil.',
+    'no_tutor_here':
+        'GoAbacUs Tutor n’est pas installé sur ce téléphone. Installez-le ou montrez le code à un autre appareil.',
     'subscription': 'Abonnement',
-    'sub_none': 'Pas encore d’abonnement. Saisissez le code du coffret ou abonnez-vous.',
+    'sub_none':
+        'Pas encore d’abonnement. Saisissez le code du coffret ou abonnez-vous.',
     'sub_until': 'Valable jusqu’au {date} (encore {n} jours). {plan}.',
     'sub_ended': 'L’abonnement a pris fin le {date}.',
-    'sub_why': 'L’abonnement permet de lire les pages et d’envoyer les exercices à votre enfant. Sans lui, le tuteur de l’enfant n’ouvre pas de nouveaux exercices. La lecture et les leçons fonctionnent toujours sans internet : le réseau ne sert qu’à activer et renouveler.',
+    'sub_why':
+        'L’abonnement permet de lire les pages et d’envoyer les exercices à votre enfant. Sans lui, le tuteur de l’enfant n’ouvre pas de nouveaux exercices. La lecture et les leçons fonctionnent toujours sans internet : le réseau ne sert qu’à activer et renouveler.',
     'sub_none_short': 'Aucun : lecture et envoi bloqués',
     'sub_short': 'encore {n} jours',
     'kit_code': 'Code du coffret',
@@ -410,19 +452,24 @@ const _t = <String, Map<String, String>>{
     'plan_kit': 'Code du coffret',
     'plan_sub': 'Abonnement',
     'plan_gift': 'Cadeau',
-    'lerr_no_server': 'Le serveur d’abonnement n’est pas encore configuré dans cette version.',
+    'lerr_no_server':
+        'Le serveur d’abonnement n’est pas encore configuré dans cette version.',
     'lerr_offline': 'Serveur injoignable. Vérifiez internet et réessayez.',
-    'lerr_code_unknown': 'Ce code n’existe pas. Vérifiez les lettres et les chiffres.',
+    'lerr_code_unknown':
+        'Ce code n’existe pas. Vérifiez les lettres et les chiffres.',
     'lerr_code_used': 'Ce code a déjà été activé par une autre famille.',
     'lerr_not_paid': 'Le store n’a pas confirmé le paiement.',
     'lerr_family_mismatch': 'Erreur de clé de famille. Contactez l’assistance.',
     'lerr_server_error': 'Erreur du serveur. Réessayez plus tard.',
-    'lerr_store_not_ready': 'Le paiement via ce store n’est pas encore configuré.',
+    'lerr_store_not_ready':
+        'Le paiement via ce store n’est pas encore configuré.',
     'lerr_store_error': 'L’achat a échoué.',
     'child_errors': 'Erreurs dans l’app de l’enfant : {n}',
-    'child_errors_text': 'Touchez pour copier la description pour l’assistance. Elle ne contient aucune donnée sur votre enfant.',
+    'child_errors_text':
+        'Touchez pour copier la description pour l’assistance. Elle ne contient aucune donnée sur votre enfant.',
     'copied': 'Copié',
-    'qr_text': 'Sur l’appareil de l’enfant, touchez « Recevoir les exercices » et visez ce code. Pas besoin d’internet.',
+    'qr_text':
+        'Sur l’appareil de l’enfant, touchez « Recevoir les exercices » et visez ce code. Pas besoin d’internet.',
     'for_kid': 'Pour : {name}',
     'read_report': 'Lire le bilan de l’enfant',
     'report_hint': 'Visez le code du bilan sur l’appareil de l’enfant.',
@@ -433,7 +480,8 @@ const _t = <String, Map<String, String>>{
     'hints': 'indices : {n}',
     'tries': 'essais : {n}',
     'no_kid': 'Ajoutez d’abord un enfant.',
-    'local_note': 'La page est lue sur le téléphone ; la photo n’est envoyée nulle part.',
+    'local_note':
+        'La page est lue sur le téléphone ; la photo n’est envoyée nulle part.',
     'mistake_offByOne': 'décalé de un',
     'mistake_placeValue': 'dizaine perdue',
     'mistake_wrongOp': 'mauvaise opération',
@@ -447,6 +495,7 @@ const _t = <String, Map<String, String>>{
     'w_room_bigger_than_roof': 'nombre plus grand que le toit',
     'w_bad_floor': 'étage incorrect',
     'w_nothing_to_find': 'rien à trouver',
+    'family_id': 'ID de la famille (pour l’assistance) : {id}',
   },
   'es': {
     'app': 'GoAbacUs Scan',
@@ -469,22 +518,27 @@ const _t = <String, Map<String, String>>{
     'school_lang': 'Idioma del colegio',
     'home_lang': 'Idioma de casa (el tutor lo habla)',
     'pair': 'Vincular el dispositivo del niño',
-    'pair_text': 'Abre GoAbacUs Tutor en el dispositivo del niño, toca «Escanear código» y apunta la cámara a este código. Contiene la clave de la familia: no se lo enseñes a nadie más.',
+    'pair_text':
+        'Abre GoAbacUs Tutor en el dispositivo del niño, toca «Escanear código» y apunta la cámara a este código. Contiene la clave de la familia: no se lo enseñes a nadie más.',
     'photo': 'Fotografiar una página',
     'gallery': 'Elegir una foto',
     'manual': 'Escribir ejercicios',
     'reading': 'Leyendo la página en el móvil…',
     'read_failed': 'No se pudo leer la página: {e}',
     'check': '¿Está bien?',
-    'check_text': 'Compara los ejercicios con la página. Toca para corregir, desliza para quitar.',
+    'check_text':
+        'Compara los ejercicios con la página. Toca para corregir, desliza para quitar.',
     'found': 'Ejercicios encontrados: {n}',
-    'nothing_found': 'No hay ejercicios legibles en la página. Escríbelos a mano.',
-    'hard_page': 'La página parece tener ejercicios que aún no sé leer (casitas de números, problemas). Revísalos y añádelos.',
+    'nothing_found':
+        'No hay ejercicios legibles en la página. Escríbelos a mano.',
+    'hard_page':
+        'La página parece tener ejercicios que aún no sé leer (casitas de números, problemas). Revísalos y añádelos.',
     'source': 'Nombre (p. ej. «Mates p. 34»)',
     'send': 'Enviar al niño',
     'add_task': 'Añadir ejercicio',
     'edit_task': 'Ejercicio',
-    'edit_help': 'Ejemplo: 8+5, 9+?=15, 7*6. «Por pasos»: una cuenta que pasa la decena y que el niño resuelve en dos pasos (57+28 → 57+20, luego +8).',
+    'edit_help':
+        'Ejemplo: 8+5, 9+?=15, 7*6. «Por pasos»: una cuenta que pasa la decena y que el niño resuelve en dos pasos (57+28 → 57+20, luego +8).',
     'type_eq': 'Ejemplo',
     'type_steps': 'Por pasos',
     'bad_task': 'No entiendo este ejercicio',
@@ -492,14 +546,18 @@ const _t = <String, Map<String, String>>{
     'save': 'Guardar',
     'qr_title': 'Enseña el código al niño',
     'continue_here': 'Continuar en este móvil',
-    'continue_here_text': 'Si el tutor está en este móvil: se abre la clase, dale el móvil a tu hijo. El informe vuelve aquí solo.',
+    'continue_here_text':
+        'Si el tutor está en este móvil: se abre la clase, dale el móvil a tu hijo. El informe vuelve aquí solo.',
     'this_phone': 'En este móvil',
-    'no_tutor_here': 'GoAbacUs Tutor no está instalado en este móvil. Instálalo o enseña el código a otro dispositivo.',
+    'no_tutor_here':
+        'GoAbacUs Tutor no está instalado en este móvil. Instálalo o enseña el código a otro dispositivo.',
     'subscription': 'Suscripción',
-    'sub_none': 'Aún no hay suscripción. Introduce el código del kit o suscríbete.',
+    'sub_none':
+        'Aún no hay suscripción. Introduce el código del kit o suscríbete.',
     'sub_until': 'Válida hasta el {date} (quedan {n} días). {plan}.',
     'sub_ended': 'La suscripción terminó el {date}.',
-    'sub_why': 'La suscripción permite leer páginas y enviar ejercicios a tu hijo. Sin ella, el tutor del niño no abre ejercicios nuevos. La lectura y las clases siguen funcionando sin internet: la red solo hace falta para activar y renovar.',
+    'sub_why':
+        'La suscripción permite leer páginas y enviar ejercicios a tu hijo. Sin ella, el tutor del niño no abre ejercicios nuevos. La lectura y las clases siguen funcionando sin internet: la red solo hace falta para activar y renovar.',
     'sub_none_short': 'Ninguna: lectura y envío bloqueados',
     'sub_short': 'quedan {n} días',
     'kit_code': 'Código del kit',
@@ -513,22 +571,29 @@ const _t = <String, Map<String, String>>{
     'plan_kit': 'Código del kit',
     'plan_sub': 'Suscripción',
     'plan_gift': 'Regalo',
-    'lerr_no_server': 'El servidor de suscripciones aún no está configurado en esta versión.',
-    'lerr_offline': 'No se puede conectar con el servidor. Comprueba internet y vuelve a intentarlo.',
-    'lerr_code_unknown': 'Ese código no existe. Revisa las letras y los números.',
+    'lerr_no_server':
+        'El servidor de suscripciones aún no está configurado en esta versión.',
+    'lerr_offline':
+        'No se puede conectar con el servidor. Comprueba internet y vuelve a intentarlo.',
+    'lerr_code_unknown':
+        'Ese código no existe. Revisa las letras y los números.',
     'lerr_code_used': 'Otra familia ya ha activado este código.',
     'lerr_not_paid': 'La tienda no ha confirmado el pago.',
-    'lerr_family_mismatch': 'Error en la clave de la familia. Contacta con soporte.',
+    'lerr_family_mismatch':
+        'Error en la clave de la familia. Contacta con soporte.',
     'lerr_server_error': 'Error del servidor. Inténtalo más tarde.',
     'lerr_store_not_ready': 'El pago con esta tienda aún no está configurado.',
     'lerr_store_error': 'La compra ha fallado.',
     'child_errors': 'Errores en la app del niño: {n}',
-    'child_errors_text': 'Toca para copiar la descripción para soporte. No contiene datos de tu hijo.',
+    'child_errors_text':
+        'Toca para copiar la descripción para soporte. No contiene datos de tu hijo.',
     'copied': 'Copiado',
-    'qr_text': 'En el dispositivo del niño toca «Recibir ejercicios» y apunta la cámara a este código. No hace falta internet.',
+    'qr_text':
+        'En el dispositivo del niño toca «Recibir ejercicios» y apunta la cámara a este código. No hace falta internet.',
     'for_kid': 'Para: {name}',
     'read_report': 'Leer el informe del niño',
-    'report_hint': 'Apunta la cámara al código del informe en el dispositivo del niño.',
+    'report_hint':
+        'Apunta la cámara al código del informe en el dispositivo del niño.',
     'not_ours': 'Este código es de otra familia o está dañado.',
     'reports': 'Informes',
     'sent': 'Enviado',
@@ -536,7 +601,8 @@ const _t = <String, Map<String, String>>{
     'hints': 'pistas: {n}',
     'tries': 'intentos: {n}',
     'no_kid': 'Primero añade un niño.',
-    'local_note': 'La página se lee en el móvil; la foto no se envía a ningún sitio.',
+    'local_note':
+        'La página se lee en el móvil; la foto no se envía a ningún sitio.',
     'mistake_offByOne': 'uno de más o de menos',
     'mistake_placeValue': 'decena perdida',
     'mistake_wrongOp': 'operación equivocada',
@@ -550,6 +616,7 @@ const _t = <String, Map<String, String>>{
     'w_room_bigger_than_roof': 'número mayor que el tejado',
     'w_bad_floor': 'piso incorrecto',
     'w_nothing_to_find': 'nada que buscar',
+    'family_id': 'ID de la familia (para soporte): {id}',
   },
 };
 

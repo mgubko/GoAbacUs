@@ -23,10 +23,19 @@ purchase token. No names, children or homework.
    `packages/tutor_tasks/lib/src/license_keys.dart`, then rebuild both apps.
    Release builds trust only production keys. Debug builds also trust the
    public dev key, which the server uses when `LICENSE_SEED` is not set.
-2. Firestore (native mode) in the same Google Cloud project.
+2. Firestore (native mode) in the same Google Cloud project, in an EU
+   region (e.g. `europe-west3`, Frankfurt), with the time-to-live policy
+   that deletes a family two years after its licence ended (the privacy
+   policy promises it):
+   ```
+   gcloud firestore fields ttls update expireAt \
+     --collection-group=families --enable-ttl
+   ```
+   Deploy Cloud Run in the same region and keep its request logs for 30
+   days (the default bucket keeps them 30 days).
 3. Cloud Run, built from the repository root:
    ```
-   gcloud run deploy goabacus-license --source . \
+   gcloud run deploy goabacus-license --source . --region europe-west3 \
      --set-env-vars STORE=firestore:PROJECT,PLAY_PACKAGE=com.goabacus.scan \
      --set-secrets LICENSE_SEED=LICENSE_SEED:latest --allow-unauthenticated
    ```
