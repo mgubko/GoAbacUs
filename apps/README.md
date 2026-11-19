@@ -8,7 +8,6 @@ repository root stays as it is (the free app); nothing here changes it.
 | `apps/scan` — **GoAbacUs Scan** (`com.goabacus.scan`) | parent | Photographs a homework page, reads it **on the phone** (ML Kit text recognition + rule parser, no network), shows "Is it right?" with every task editable, sends the tasks to the child's device as a signed QR code, reads the lesson report back from a QR code. |
 | `apps/tutor` — **GoAbacUs Tutor** (`com.goabacus.tutor`) | child | Receives tasks by QR code and leads the lesson on the screen abacus: one small question at a time, a hint ladder (remark → wire to look at → similar example → own example move by move), mistakes classified (off by one, lost ten, wrong sign, swapped digits). Shows the report as a QR code. **No internet:** the release build has no `INTERNET` permission (checked in CI) and no network code (checked by a test). |
 
-| `apps/camlab` — **GoAbacUs Camera Lab** (`com.goabacus.camlab`) | developer / test | Point the phone at a printed sheet: it finds the corner markers, shows the straightened field and reads rods (sheet 14), an abacus (sheet 15) or finger touches from behind (film tables 10–13). For testing the camera before the desk box exists. |
 
 Shared code:
 

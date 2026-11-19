@@ -1,7 +1,7 @@
 # tutor_vision
 
 On-device camera recognition for GoAbacUs. Pure Dart: no OpenCV, no native
-code, no network. Used by `apps/camlab` (Camera Lab) and later by the tutor.
+code, no network. Used by `packages/tutor_camera` in the Tutor app.
 
 | Step | File | What |
 |---|---|---|

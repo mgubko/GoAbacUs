@@ -14,4 +14,5 @@ The desk camera for the GoAbacUs apps (Flutter): camera stream → recognition
   wires with digits. Second tab: the raw camera frame with the markers found.
   Open it from any app with `DeskCameraScreen.open(context)`.
 
-`apps/camlab` is just this screen.
+In the Tutor app it opens from the camera button on the home and lesson
+screens ("Что видит камера").
