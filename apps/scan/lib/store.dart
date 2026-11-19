@@ -8,6 +8,9 @@ class FamilyStore {
   FamilyStore._(this._p);
   final SharedPreferences _p;
 
+  /// For app settings kept next to the family (crash report consent).
+  SharedPreferences get prefs => _p;
+
   static Future<FamilyStore> open() async {
     final s = FamilyStore._(await SharedPreferences.getInstance());
     if (s._p.getString('fam_id') == null) {

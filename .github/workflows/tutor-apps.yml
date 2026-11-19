@@ -173,11 +173,13 @@ jobs:
         working-directory: apps/${{ matrix.app }}
         env:
           LICENSE_SERVER: ${{ vars.LICENSE_SERVER }}
+          # Optional: without it Scan has no crash-report switch.
+          SENTRY_DSN: ${{ vars.SENTRY_DSN }}
         run: |
           if [ "${{ matrix.app }}" = scan ] && [ -z "$LICENSE_SERVER" ]; then
             echo "::error::Set the repository variable LICENSE_SERVER"; exit 1
           fi
-          args="--build-name=${{ steps.pick.outputs.name }} --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols --dart-define=LICENSE_SERVER=$LICENSE_SERVER"
+          args="--build-name=${{ steps.pick.outputs.name }} --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols --dart-define=LICENSE_SERVER=$LICENSE_SERVER --dart-define=SENTRY_DSN=$SENTRY_DSN"
           flutter pub get
           flutter build appbundle --release $args
           flutter build apk --release $args

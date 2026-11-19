@@ -5,8 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Errors are kept on the device only: the last few, short, without any
-/// task or child data. Nothing is sent anywhere by this class; the child's
+/// Errors are kept on the device: the last few, short, without any task
+/// or child data. They are sent to Sentry only if the parent turned crash
+/// reports on (see crash_reports.dart); the child's
 /// app passes a summary to the parent inside the lesson report, and the
 /// parent decides whether to send it to support.
 class ErrorLog {

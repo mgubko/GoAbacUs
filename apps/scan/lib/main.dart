@@ -8,6 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'crash_reports.dart';
 import 'errors.dart';
 import 'license.dart';
 import 'qr.dart';
@@ -24,6 +25,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await ErrorLog.install();
   final store = await FamilyStore.open();
+  await CrashReports.start(store.prefs);
   appLang.value =
       store.lang ??
       (languages.containsKey(PlatformDispatcher.instance.locale.languageCode)
@@ -283,6 +285,35 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// Turning reports on asks first and says what is sent; off is instant.
+  Future<void> _toggleCrashReports() async {
+    if (CrashReports.on.value) {
+      await CrashReports.set(store.prefs, false);
+      if (mounted) setState(() {});
+      return;
+    }
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr('crash_reports')),
+        content: SingleChildScrollView(child: Text(tr('crash_reports_text'))),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(tr('cancel')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(tr('crash_reports_on')),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await CrashReports.set(store.prefs, true);
+    if (mounted) setState(() {});
+  }
+
   /// The old phone: the family as a QR code, for a few minutes.
   void _moveOut() {
     showDialog<void>(
@@ -436,12 +467,21 @@ class _HomeScreenState extends State<HomeScreen> {
         title: Text(tr('app')),
         actions: [
           PopupMenuButton<String>(
-            tooltip: tr('move_family'),
-            icon: const Icon(Icons.phonelink_setup),
-            onSelected: (v) => v == 'out' ? _moveOut() : _moveIn(),
+            icon: const Icon(Icons.more_vert),
+            onSelected: (v) => switch (v) {
+              'out' => _moveOut(),
+              'in' => _moveIn(),
+              _ => _toggleCrashReports(),
+            },
             itemBuilder: (_) => [
               PopupMenuItem(value: 'out', child: Text(tr('move_out'))),
               PopupMenuItem(value: 'in', child: Text(tr('move_in'))),
+              if (CrashReports.available)
+                CheckedPopupMenuItem(
+                  value: 'crash',
+                  checked: CrashReports.on.value,
+                  child: Text(tr('crash_reports')),
+                ),
             ],
           ),
           PopupMenuButton<String>(
