@@ -35,16 +35,34 @@ class FamilyRecord {
   FamilyRecord({
     required this.id,
     required this.keyHash,
-    required this.until,
-    required this.plan,
+    this.kitUntil,
+    this.subUntil,
     this.store,
     this.product,
     this.token,
   });
   final String id;
   final String keyHash;
-  DateTime until;
-  String plan;
+
+  /// Paid by kit codes up to this day.
+  DateTime? kitUntil;
+
+  /// Paid by the store subscription up to this day (the store's word: a
+  /// refund or revocation moves it back).
+  DateTime? subUntil;
+
+  DateTime get until {
+    final k = kitUntil, s = subUntil;
+    if (k == null) return s ?? DateTime.utc(2000);
+    if (s == null) return k;
+    return k.isAfter(s) ? k : s;
+  }
+
+  /// Which payment carries [until].
+  String get plan =>
+      subUntil != null && !subUntil!.isBefore(kitUntil ?? DateTime.utc(2000))
+      ? 'sub'
+      : 'kit';
 
   /// 'play' or 'apple' when the family pays by subscription.
   String? store;
@@ -53,8 +71,8 @@ class FamilyRecord {
 
   Map<String, Object?> toJson() => {
     'keyHash': keyHash,
-    'until': until.toIso8601String(),
-    'plan': plan,
+    if (kitUntil != null) 'kitUntil': kitUntil!.toIso8601String(),
+    if (subUntil != null) 'subUntil': subUntil!.toIso8601String(),
     'store': ?store,
     'product': ?product,
     'token': ?token,
@@ -64,16 +82,33 @@ class FamilyRecord {
       FamilyRecord(
         id: id,
         keyHash: j['keyHash'] as String,
-        until: DateTime.parse(j['until'] as String),
-        plan: j['plan'] as String,
+        kitUntil: j['kitUntil'] == null
+            ? null
+            : DateTime.parse(j['kitUntil'] as String),
+        subUntil: j['subUntil'] == null
+            ? null
+            : DateTime.parse(j['subUntil'] as String),
         store: j['store'] as String?,
         product: j['product'] as String?,
         token: j['token'] as String?,
       );
 }
 
+class CodeTaken implements Exception {}
+
 abstract class Store {
   Future<CodeRecord?> code(String code);
+
+  /// Marks [code] as used by [family], atomically: of two families that
+  /// redeem the same code at the same moment only one gets it. Returns the
+  /// record and whether it was claimed just now (false: [family] had it
+  /// already); null for an unknown code; throws [CodeTaken] when another
+  /// family has it.
+  Future<({CodeRecord code, bool now})?> claimCode(
+    String code,
+    String family,
+    DateTime at,
+  );
   Future<void> putCode(CodeRecord c);
   Future<FamilyRecord?> family(String id);
   Future<void> putFamily(FamilyRecord f);
@@ -88,6 +123,24 @@ class MemoryStore implements Store {
   Future<CodeRecord?> code(String code) async => codes[code];
   @override
   Future<void> putCode(CodeRecord c) async => codes[c.code] = c;
+  @override
+  Future<({CodeRecord code, bool now})?> claimCode(
+    String code,
+    String family,
+    DateTime at,
+  ) async {
+    final c = codes[code];
+    if (c == null) return null;
+    if (c.family != null) {
+      if (c.family != family) throw CodeTaken();
+      return (code: c, now: false);
+    }
+    c
+      ..family = family
+      ..used = at;
+    return (code: c, now: true);
+  }
+
   @override
   Future<FamilyRecord?> family(String id) async => families[id];
   @override
@@ -136,6 +189,17 @@ class FileStore implements Store {
   }
 
   @override
+  Future<({CodeRecord code, bool now})?> claimCode(
+    String code,
+    String family,
+    DateTime at,
+  ) async {
+    final c = await _m.claimCode(code, family, at);
+    if (c != null) _save();
+    return c;
+  }
+
+  @override
   Future<FamilyRecord?> family(String id) => _m.family(id);
   @override
   Future<void> putFamily(FamilyRecord f) async {
@@ -166,19 +230,24 @@ class FirestoreStore implements Store {
     }
   }
 
-  Future<void> _put(String col, String id, Map<String, Object?> j) =>
-      api.projects.databases.documents.patch(
-        fs.Document(
-          fields: {
-            for (final e in j.entries)
-              if (e.value != null)
-                e.key: e.value is int
-                    ? fs.Value(integerValue: '${e.value}')
-                    : fs.Value(stringValue: '${e.value}'),
-          },
-        ),
-        _doc(col, id),
-      );
+  Future<void> _put(
+    String col,
+    String id,
+    Map<String, Object?> j, {
+    String? ifUpdateTime,
+  }) => api.projects.databases.documents.patch(
+    fs.Document(
+      fields: {
+        for (final e in j.entries)
+          if (e.value != null)
+            e.key: e.value is int
+                ? fs.Value(integerValue: '${e.value}')
+                : fs.Value(stringValue: '${e.value}'),
+      },
+    ),
+    _doc(col, id),
+    currentDocument_updateTime: ifUpdateTime,
+  );
 
   @override
   Future<CodeRecord?> code(String code) async {
@@ -193,6 +262,44 @@ class FirestoreStore implements Store {
 
   @override
   Future<void> putCode(CodeRecord c) => _put('codes', c.code, c.toJson());
+
+  @override
+  Future<({CodeRecord code, bool now})?> claimCode(
+    String code,
+    String family,
+    DateTime at,
+  ) async {
+    for (var attempt = 0; attempt < 3; attempt++) {
+      final fs.Document d;
+      try {
+        d = await api.projects.databases.documents.get(_doc('codes', code));
+      } on fs.DetailedApiRequestError catch (e) {
+        if (e.status == 404) return null;
+        rethrow;
+      }
+      final c = CodeRecord.fromJson(code, {
+        for (final e in (d.fields ?? {}).entries)
+          e.key: e.key == 'days'
+              ? int.tryParse(e.value.integerValue ?? '') ?? 90
+              : e.value.stringValue,
+      });
+      if (c.family != null) {
+        if (c.family != family) throw CodeTaken();
+        return (code: c, now: false);
+      }
+      c
+        ..family = family
+        ..used = at;
+      try {
+        // Only if nobody changed the code since we read it.
+        await _put('codes', code, c.toJson(), ifUpdateTime: d.updateTime);
+        return (code: c, now: true);
+      } on fs.DetailedApiRequestError catch (e) {
+        if (e.status != 400 && e.status != 409) rethrow;
+      }
+    }
+    throw CodeTaken();
+  }
 
   @override
   Future<FamilyRecord?> family(String id) async {

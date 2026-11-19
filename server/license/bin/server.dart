@@ -13,6 +13,7 @@ library;
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:goabacus_license/limits.dart';
 import 'package:goabacus_license/purchases.dart';
 import 'package:goabacus_license/service.dart';
 import 'package:goabacus_license/store.dart';
@@ -66,6 +67,7 @@ Future<void> main() async {
   );
   final handler = const Pipeline()
       .addMiddleware(logRequests())
+      .addMiddleware(limits())
       .addHandler(service.router.call);
   final port = int.parse(env['PORT'] ?? '8080');
   await io.serve(handler, InternetAddress.anyIPv4, port);

@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'errors.dart';
 import 'lesson.dart';
 import 'lesson_screen.dart';
 import 'qr.dart';
@@ -18,6 +19,7 @@ import 'strings.dart';
 /// report goes back as a QR code.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ErrorLog.install();
   SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp,
     DeviceOrientation.portraitDown,
@@ -216,7 +218,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
     if (lesson == null) return;
     await store.setProgress(lesson.progress);
-    await store.finish(p, lesson.report());
+    final log = ErrorLog.instance;
+    await store.finish(
+      p,
+      lesson.report(errors: log?.since(store.lastReportAt) ?? const []),
+    );
     if (!mounted) return;
     setState(() {});
     _showReport();
@@ -388,7 +394,9 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const Icon(Icons.wifi_off, size: 16),
                 const SizedBox(width: 6),
-                Text(tr('offline')),
+                Flexible(
+                  child: Text(tr('offline'), textAlign: TextAlign.center),
+                ),
               ],
             ),
           ],

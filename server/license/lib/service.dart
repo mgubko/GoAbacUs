@@ -104,55 +104,55 @@ class LicenseService {
   };
 
   Future<Map<String, Object?>> redeem(Map<String, Object?> b) async {
-    final raw = _str(b, 'code');
-    final code = normalizeCode(raw);
-    final c = await store.code(code);
-    if (c == null) throw const Refused(404, 'code');
+    final code = normalizeCode(_str(b, 'code'));
     final family = _str(b, 'family');
+    final keyHash = _str(b, 'keyHash');
     var f = await _family(b);
-    if (c.family != null) {
-      if (c.family != family) throw const Refused(409, 'used');
-      if (f == null) throw const Refused(409, 'used');
-      return _license(f); // a retry of the same redemption
+    final at = clock().toUtc();
+    final ({CodeRecord code, bool now})? claim;
+    try {
+      claim = await store.claimCode(code, family, at);
+    } on CodeTaken {
+      throw const Refused(409, 'used');
     }
-    final from = f != null && f.until.isAfter(_today) ? f.until : _today;
-    final until = from.add(Duration(days: c.days - (from == _today ? 1 : 0)));
-    f = FamilyRecord(
-      id: family,
-      keyHash: _str(b, 'keyHash'),
-      until: until,
-      plan: f?.store != null ? f!.plan : 'kit',
-      store: f?.store,
-      product: f?.product,
-      token: f?.token,
-    );
-    c
-      ..family = family
-      ..used = clock().toUtc();
-    await store.putCode(c);
+    if (claim == null) throw const Refused(404, 'code');
+    final c = claim.code;
+    // A retry of the same redemption gives the same licence; the days are
+    // added once (unless the first try died before the family was saved).
+    if (!claim.now && f != null) return _license(f);
+    f ??= FamilyRecord(id: family, keyHash: keyHash);
+    final k = f.kitUntil;
+    final from = k != null && !k.isBefore(_today)
+        ? k.add(const Duration(days: 1))
+        : _today;
+    f.kitUntil = from.add(Duration(days: c.days - 1));
     await store.putFamily(f);
     return _license(f);
   }
 
-  Future<Map<String, Object?>> playPurchase(Map<String, Object?> b) async {
+  /// The store's paid-up day for the family's subscription.
+  Future<DateTime?> _storeUntil(String product, String token) async {
     final v = play;
     if (v == null) throw const Refused(501, 'play');
+    final paid = await v.paidUntil(product, token);
+    return paid == null ? null : DateTime.utc(paid.year, paid.month, paid.day);
+  }
+
+  Future<Map<String, Object?>> playPurchase(Map<String, Object?> b) async {
     final product = _str(b, 'product');
     final token = _str(b, 'token');
-    final paid = await v.paidUntil(product, token);
-    if (paid == null) throw const Refused(402, 'not paid');
-    final old = await _family(b);
-    final until = DateTime.utc(paid.year, paid.month, paid.day);
-    final f = FamilyRecord(
-      id: _str(b, 'family'),
-      keyHash: _str(b, 'keyHash'),
-      // Days left from a kit code are kept.
-      until: old != null && old.until.isAfter(until) ? old.until : until,
-      plan: 'sub',
-      store: 'play',
-      product: product,
-      token: token,
-    );
+    final until = await _storeUntil(product, token);
+    if (until == null || until.isBefore(_today)) {
+      throw const Refused(402, 'not paid');
+    }
+    final f =
+        await _family(b) ??
+        FamilyRecord(id: _str(b, 'family'), keyHash: _str(b, 'keyHash'));
+    f
+      ..subUntil = until
+      ..store = 'play'
+      ..product = product
+      ..token = token;
     await store.putFamily(f);
     return _license(f);
   }
@@ -160,15 +160,12 @@ class LicenseService {
   Future<Map<String, Object?>> refresh(Map<String, Object?> b) async {
     final f = await _family(b);
     if (f == null) throw const Refused(404, 'family');
-    final v = play;
-    if (f.store == 'play' && v != null && f.token != null) {
-      final paid = await v.paidUntil(f.product!, f.token!);
-      if (paid != null) {
-        final until = DateTime.utc(paid.year, paid.month, paid.day);
-        if (until.isAfter(f.until)) {
-          f.until = until;
-          await store.putFamily(f);
-        }
+    if (f.store == 'play' && play != null && f.token != null) {
+      // The store's word, also when it moves back (refund, revocation).
+      final until = await _storeUntil(f.product!, f.token!);
+      if (until != f.subUntil) {
+        f.subUntil = until;
+        await store.putFamily(f);
       }
     }
     return _license(f);

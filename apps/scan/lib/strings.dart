@@ -93,6 +93,9 @@ const _t = <String, Map<String, String>>{
     'lerr_server_error': 'Ошибка сервера. Попробуйте позже.',
     'lerr_store_not_ready': 'Оплата через этот магазин ещё не подключена.',
     'lerr_store_error': 'Покупка не прошла.',
+    'child_errors': 'В приложении ребёнка были сбои: {n}',
+    'child_errors_text': 'Нажмите, чтобы скопировать описание для поддержки. Там нет данных о ребёнке.',
+    'copied': 'Скопировано',
     'qr_text':
         'На устройстве ребёнка: «Получить задания» и навести камеру на этот код. Интернет не нужен.',
     'for_kid': 'Для: {name}',
@@ -199,6 +202,9 @@ const _t = <String, Map<String, String>>{
     'lerr_server_error': 'Serverfehler. Bitte später erneut versuchen.',
     'lerr_store_not_ready': 'Zahlung über diesen Store ist noch nicht eingerichtet.',
     'lerr_store_error': 'Der Kauf ist fehlgeschlagen.',
+    'child_errors': 'Fehler in der App des Kindes: {n}',
+    'child_errors_text': 'Tippen, um die Beschreibung für den Support zu kopieren. Sie enthält keine Daten über das Kind.',
+    'copied': 'Kopiert',
     'qr_text':
         'Auf dem Gerät des Kindes „Aufgaben holen“ und die Kamera auf diesen Code richten. Kein Internet nötig.',
     'for_kid': 'Für: {name}',
@@ -303,6 +309,9 @@ const _t = <String, Map<String, String>>{
     'lerr_server_error': 'Server error. Please try later.',
     'lerr_store_not_ready': 'Payment through this store is not set up yet.',
     'lerr_store_error': 'The purchase failed.',
+    'child_errors': 'Errors in the child’s app: {n}',
+    'child_errors_text': 'Tap to copy the description for support. It holds no data about your child.',
+    'copied': 'Copied',
     'qr_text':
         'On the child’s device tap “Get tasks” and point the camera at this code. No internet needed.',
     'for_kid': 'For: {name}',

@@ -3,10 +3,12 @@ import 'dart:async';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import 'errors.dart';
 import 'license.dart';
 import 'qr.dart';
 import 'recognize.dart';
@@ -20,6 +22,7 @@ import 'strings.dart';
 /// child's tutor as a QR code.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await ErrorLog.install();
   final store = await FamilyStore.open();
   appLang.value =
       store.lang ??
@@ -326,6 +329,20 @@ class _HomeScreenState extends State<HomeScreen> {
                       '${x.seconds} s',
                     ].join(' · '),
                   ),
+                ),
+              if (r.errors.isNotEmpty)
+                ListTile(
+                  leading: const Icon(Icons.bug_report_outlined),
+                  title: Text(tr('child_errors', {'n': r.errors.length})),
+                  subtitle: Text(tr('child_errors_text')),
+                  onTap: () {
+                    Clipboard.setData(
+                      ClipboardData(text: r.errors.join('\n')),
+                    );
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(tr('copied'))),
+                    );
+                  },
                 ),
             ],
           ),

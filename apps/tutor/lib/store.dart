@@ -59,6 +59,13 @@ class TutorStore {
     await _p.setString('last_report', report.encode(key));
   }
 
+  /// When the last report was made (errors after it go into the next).
+  DateTime? get lastReportAt {
+    final c = lastReport;
+    final key = pairing?.key;
+    return c == null || key == null ? null : LessonReport.decode(c, key)?.finished;
+  }
+
   /// The last lesson's report code, to show the parent.
   String? get lastReport => _p.getString('last_report');
 

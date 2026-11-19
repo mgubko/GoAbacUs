@@ -253,6 +253,7 @@ class LessonReport {
     required this.packet,
     required this.results,
     required this.finished,
+    this.errors = const [],
   });
 
   final String family;
@@ -260,6 +261,10 @@ class LessonReport {
   final String packet;
   final List<TaskResult> results;
   final DateTime finished;
+
+  /// Short error summaries from the child's app since the last report (at
+  /// most 3), for support; the parent decides whether to send them.
+  final List<String> errors;
 
   static const prefix = 'GR1.';
 
@@ -270,6 +275,7 @@ class LessonReport {
     'p': packet,
     'at': finished.millisecondsSinceEpoch ~/ 1000,
     'r': [for (final r in results) r.toJson()],
+    if (errors.isNotEmpty) 'x': errors.take(3).toList(),
   };
 
   static LessonReport fromJson(Map<String, Object?> j) => LessonReport(
@@ -281,6 +287,7 @@ class LessonReport {
       for (final r in j['r'] as List)
         TaskResult.fromJson(r as Map<String, Object?>),
     ],
+    errors: [for (final e in (j['x'] as List?) ?? const []) '$e'],
   );
 
   String encode(FamilyKey key) => _seal(prefix, toJson(), key);

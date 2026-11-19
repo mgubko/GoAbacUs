@@ -87,11 +87,12 @@ class FamilyStore {
       ?LessonReport.decode(s, key),
   ];
 
+  /// Keeps the last 50; the same report read twice is kept once.
   Future<void> addReport(String code) async {
-    await _p.setStringList('reports', [
-      code,
-      ...?_p.getStringList('reports')?.take(49),
-    ]);
+    final old = (_p.getStringList('reports') ?? const <String>[])
+        .where((c) => c != code)
+        .take(49);
+    await _p.setStringList('reports', [code, ...old]);
   }
 
   String? get lang => _p.getString('lang');

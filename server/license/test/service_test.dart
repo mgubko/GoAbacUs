@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:goabacus_license/limits.dart';
 import 'package:goabacus_license/purchases.dart';
 import 'package:goabacus_license/service.dart';
 import 'package:goabacus_license/store.dart';
@@ -117,5 +118,52 @@ void main() {
     now = DateTime.utc(2026, 12, 20);
     final (_, j2) = await post('/v1/refresh', fam);
     expect(lic(j2).until, DateTime.utc(2027, 1, 19));
+  });
+
+  test('two families redeem one code at the same moment: one wins', () async {
+    final other = FamilyKey.generate();
+    final rs = await Future.wait([
+      post('/v1/redeem', {...fam, 'code': 'GA7K3MQ9X2PD'}),
+      post('/v1/redeem', {
+        'family': other.id,
+        'keyHash': License.hashOf(other),
+        'code': 'GA7K3MQ9X2PD',
+      }),
+    ]);
+    expect(rs.map((r) => r.$1).toList()..sort(), [200, 409]);
+  });
+
+  test('a refund moves the licence back to the kit days', () async {
+    await post('/v1/redeem', {...fam, 'code': 'GA7K3MQ9X2PD'});
+    play.until = DateTime.utc(2027, 6, 1);
+    final (_, j) = await post('/v1/play', {
+      ...fam,
+      'product': 'family_monthly',
+      'token': 'good',
+    });
+    expect(lic(j).until, DateTime.utc(2027, 6, 1));
+    expect(lic(j).plan, Plan.sub);
+    play.until = DateTime.utc(2026, 11, 20); // refunded
+    final (_, j2) = await post('/v1/refresh', fam);
+    expect(lic(j2).until, DateTime.utc(2027, 2, 16)); // the kit's 90 days
+    expect(lic(j2).plan, Plan.kit);
+  });
+
+  test('too many tries from one client: 429', () async {
+    final h = limits(perMinute: 3, clock: () => now)(s.router.call);
+    Future<int> one() async => (await h(
+      Request(
+        'POST',
+        Uri.parse('http://x/v1/redeem'),
+        body: jsonEncode({...fam, 'code': 'WRONG'}),
+        headers: {'x-forwarded-for': '1.2.3.4'},
+      ),
+    )).statusCode;
+    expect(
+      [await one(), await one(), await one(), await one()],
+      [404, 404, 404, 429],
+    );
+    now = now.add(const Duration(minutes: 1));
+    expect(await one(), 404);
   });
 }
