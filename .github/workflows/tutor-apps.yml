@@ -74,6 +74,12 @@ jobs:
           flutter pub get
           flutter analyze
           flutter test
+      - name: tutor_camera ("what the camera sees" screen, live recognition)
+        working-directory: packages/tutor_camera
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
       - name: Camera Lab
         working-directory: apps/camlab
         run: |

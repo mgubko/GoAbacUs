@@ -9,9 +9,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  camera: ^0.11.2
-  tutor_vision:
-    path: ../../packages/tutor_vision
+  tutor_camera:
+    path: ../../packages/tutor_camera
 
 dev_dependencies:
   flutter_test:

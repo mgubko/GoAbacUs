@@ -18,7 +18,7 @@ packages:
     source: hosted
     version: "2.1.2"
   camera:
-    dependency: "direct main"
+    dependency: transitive
     description:
       name: camera
       sha256: "4142a19a38e388d3bab444227636610ba88982e36dff4552d5191a86f65dc437"
@@ -261,8 +261,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.6"
-  tutor_vision:
+  tutor_camera:
     dependency: "direct main"
+    description:
+      path: "../../packages/tutor_camera"
+      relative: true
+    source: path
+    version: "0.1.0"
+  tutor_vision:
+    dependency: transitive
     description:
       path: "../../packages/tutor_vision"
       relative: true

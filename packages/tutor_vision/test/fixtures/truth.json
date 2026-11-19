@@ -255,5 +255,17 @@
  "touch_7.jpg": {
   "cell": null,
   "hover_mm": 8
+ },
+ "counters_0.jpg": {
+  "red": 3,
+  "blue": 2
+ },
+ "counters_1.jpg": {
+  "red": 5,
+  "blue": 2
+ },
+ "counters_2.jpg": {
+  "red": 3,
+  "blue": 3
  }
 }

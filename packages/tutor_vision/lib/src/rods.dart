@@ -77,6 +77,13 @@ class RodReader {
     for (final b in blobs) {
       final ax = b.axes();
       if (ax.length < 6 * s) continue;
+      // Not a rod: a round counter (a disc thicker than a rod) or a row of
+      // touching counters (scalloped edges).
+      if (ax.thickness > 13 * s) {
+        final fillE = b.area / (math.pi / 4 * ax.length * ax.thickness);
+        if (ax.length < ax.thickness * 1.25 && fillE < 1.15) continue;
+        if (b.scalloped) continue;
+      }
       final strips = math.max(1, (ax.thickness / (rodWidthMm * s)).round());
       final (cx, cy) = b.centroid;
       final ca = math.cos(ax.angle), sa = math.sin(ax.angle);

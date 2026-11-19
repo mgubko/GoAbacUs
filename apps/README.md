@@ -20,6 +20,7 @@ Shared code:
   pages: **126 of 140** tasks, 16 of 18 "by steps" groups, as the Python
   prototype.
 - `packages/tutor_vision` (pure Dart): camera recognition, see its README.
+- `packages/tutor_camera` (Flutter): live desk camera + the "what the camera sees" screen.
 - `packages/abacus_kit`: physics, painting, sound, tilt and the example player,
   copied from the GoAbacUs app (`lib/`), plus two tutor options on the
   controller: hide the row digits, light up a wire.

@@ -67,6 +67,25 @@ void main() {
     }
   });
 
+  group('counters', () {
+    for (final name in truth.keys.where((k) => k.startsWith('counters_'))) {
+      test(name, () {
+        final t = truth[name] as Map<String, dynamic>;
+        final ref = load(name.replaceFirst('.jpg', '_empty.jpg'));
+        final cur = load(name);
+        final loc = BoardLocator();
+        final pr = loc.locate(ref)!, pc = loc.locate(cur)!;
+        final colors = ColorCalibration.fromPatches(BoardLocator.measurePatches(cur, pc));
+        final field = pc.sheet.field;
+        final a = BoardLocator.warp(ref, pr, field), b = BoardLocator.warp(cur, pc, field);
+        colors.correct(a);
+        colors.correct(b);
+        final r = CounterReader().read(b, a);
+        expect((r.red, r.blue), (t['red'], t['blue']), reason: r.counters.join('\n'));
+      });
+    }
+  });
+
   group('abacus', () {
     for (final name in truth.keys.where((k) => k.startsWith('abacus_'))) {
       test(name, () {

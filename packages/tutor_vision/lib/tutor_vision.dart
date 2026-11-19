@@ -6,6 +6,7 @@ library;
 export 'src/abacus.dart';
 export 'src/aruco.dart';
 export 'src/blobs.dart';
+export 'src/counters.dart';
 export 'src/board.dart';
 export 'src/homography.dart';
 export 'src/image.dart';

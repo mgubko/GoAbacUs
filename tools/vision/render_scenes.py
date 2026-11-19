@@ -164,7 +164,49 @@ def save(out, name, img):
     cv2.imwrite(os.path.join(out, name), img[:, :, ::-1], [cv2.IMWRITE_JPEG_QUALITY, 82])
 
 
+def render_counters(base, H, discs):
+    """discs: (x, y, colour 'r'|'b'); counters are 20 mm, 3 mm thick."""
+    shadow = np.zeros(base.shape[:2], np.float32)
+    for (x, y, _) in discs:
+        c = tex_pt(x, y, H)
+        cv2.circle(shadow, (int(c[0] + 1.2 * K), int(c[1] + 1.0 * K)), int(10 * K), 1.0, -1)
+    tex = apply_shadow(base, shadow, 0.3, 1.0)
+    r0 = np.random.default_rng(len(discs))
+    for (x, y, col) in discs:
+        rgb = np.array((205, 38, 45) if col == 'r' else (40, 78, 172), np.float32) * r0.uniform(0.92, 1.05)
+        c = tex_pt(x, y, H)
+        cv2.circle(tex, (int(c[0]), int(c[1])), int(10 * K), rgb.tolist(), -1)
+        cv2.circle(tex, (int(c[0]), int(c[1])), int(10 * K), (rgb * 0.75).tolist(), 4)
+    return tex
+
+
+def counters_only(sheets, out):
+    calib = load_sheet(f'{sheets}/calibration.png', 300, 38.5, 25, 220, 160)
+    path = os.path.join(out, 'truth.json')
+    truth = json.load(open(path))
+    scenes = [
+        [(40, 120, 'r'), (70, 120, 'r'), (100, 120, 'r'), (40, 60, 'b'), (70, 60, 'b')],
+        [(40, 120, 'r'), (60, 120, 'r'), (80, 120, 'r'), (100, 120, 'r'), (140, 50, 'b'), (170, 90, 'b'), (190, 30, 'r')],
+        [(30, 30, 'b'), (52, 34, 'b'), (120, 100, 'r'), (150, 110, 'r'), (175, 125, 'r'), (60, 90, 'b')],
+    ]
+    for i, discs in enumerate(scenes):
+        tex = render_counters(calib, 160, discs)
+        if i == 2:  # a rod lies among the counters and must not count
+            tex = render_rods(tex, 160, [(110, 40, 0.2, [6])])
+        seed = 500 + i
+        ref, light = camera(calib, 220, 160, seed)
+        img, _ = camera(tex, 220, 160, seed, light=light)
+        save(out, f'counters_{i}_empty.jpg', ref)
+        save(out, f'counters_{i}.jpg', img)
+        truth[f'counters_{i}.jpg'] = {'red': sum(d[2] == 'r' for d in discs), 'blue': sum(d[2] == 'b' for d in discs)}
+    json.dump(truth, open(path, 'w'), indent=1)
+    print('counters ok')
+
+
 def main():
+    if sys.argv[1] == 'counters':
+        counters_only(sys.argv[2], sys.argv[3])
+        return
     sheets, film, out = sys.argv[1:4]
     os.makedirs(out, exist_ok=True)
     truth = {}
@@ -246,6 +288,7 @@ def main():
 
     with open(os.path.join(out, 'truth.json'), 'w') as f:
         json.dump(truth, f, indent=1)
+    counters_only(sheets, out)
     print('scenes:', len(truth))
 
 

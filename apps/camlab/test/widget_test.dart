@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:goabacus_camlab/lab.dart';
+import 'package:tutor_camera/tutor_camera.dart';
 
 void main() {
   test('a blank frame reports that no sheet is found', () {
@@ -16,8 +16,10 @@ void main() {
       uvRowStride: w ~/ 2,
       uvPixelStride: 1,
     );
-    final r = Lab().process(f);
+    final lab = DeskLab()..wantRaw = true;
+    final r = lab.process(f);
     expect(r.status, contains('Лист не найден'));
-    expect(r.rgba, isNull);
+    expect(r.sheetRgba, isNull);
+    expect(r.rawW, 320);
   });
 }

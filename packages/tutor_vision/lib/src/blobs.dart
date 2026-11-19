@@ -49,6 +49,34 @@ class Blob {
   }
 }
 
+extension BlobShape on Blob {
+  /// True for a row of touching discs: the width across the main axis
+  /// narrows between them (a rod, or rods side by side, keeps its width).
+  bool get scalloped {
+    final ax = axes();
+    final (cx, cy) = centroid;
+    final c = math.cos(ax.angle), s = math.sin(ax.angle);
+    final bins = math.max(8, ax.length.round());
+    final lo = Float64List(bins)..fillRange(0, bins, double.infinity);
+    final hi = Float64List(bins)..fillRange(0, bins, -double.infinity);
+    for (final p in pixels) {
+      final dx = p % width - cx, dy = p ~/ width - cy;
+      final t = dx * c + dy * s, q = -dx * s + dy * c;
+      final k = ((t - ax.lo) / ax.length * bins).floor().clamp(0, bins - 1);
+      if (q < lo[k]) lo[k] = q;
+      if (q > hi[k]) hi[k] = q;
+    }
+    final wd = [for (var k = 0; k < bins; k++) hi[k] >= lo[k] ? hi[k] - lo[k] : 0.0];
+    final a = (bins * 0.2).floor(), b = (bins * 0.8).ceil();
+    var minW = double.infinity, maxW = 0.0;
+    for (var k = a; k < b; k++) {
+      if (wd[k] < minW) minW = wd[k];
+      if (wd[k] > maxW) maxW = wd[k];
+    }
+    return maxW > 0 && minW < 0.8 * maxW;
+  }
+}
+
 /// 8-connected components of [mask] (non-zero = set) with at least [minArea]
 /// pixels.
 List<Blob> findBlobs(Uint8List mask, int w, int h, {int minArea = 1}) {

@@ -1,4 +1,5 @@
 import 'abacus.dart';
+import 'counters.dart';
 import 'rods.dart';
 import 'touch.dart';
 
@@ -26,6 +27,16 @@ class RodsObservation extends AidObservation {
 class CellTouchObservation extends AidObservation {
   const CellTouchObservation(this.sheetId, this.row, this.col);
   final int sheetId, row, col;
+}
+
+/// Counters on the sheet: red and blue (the twenty field's two summands).
+class CountersObservation extends AidObservation {
+  const CountersObservation(this.red, this.blue);
+  final int red, blue;
+}
+
+extension CountersResultObservation on CountersResult {
+  CountersObservation get observation => CountersObservation(red, blue);
 }
 
 extension AbacusReadingObservation on AbacusReading {
