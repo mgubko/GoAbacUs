@@ -28,11 +28,16 @@ class LicenseError implements Exception {
 /// the phone; only this talks to the network.
 class Licensing extends ChangeNotifier {
   Licensing(this.store) {
+    if (!storeEnabled) return;
     _purchases = InAppPurchase.instance.purchaseStream.listen(
       _onPurchases,
       onError: (_) {},
     );
   }
+
+  /// Off in widget tests: there is no store on the test machine.
+  @visibleForTesting
+  static bool storeEnabled = true;
 
   final FamilyStore store;
   StreamSubscription<List<PurchaseDetails>>? _purchases;
@@ -151,11 +156,12 @@ class Licensing extends ChangeNotifier {
 
   Future<void> loadProducts() async {
     try {
-      if (!await InAppPurchase.instance.isAvailable()) return;
+      if (!storeEnabled || !await InAppPurchase.instance.isAvailable()) return;
       final r = await InAppPurchase.instance.queryProductDetails(
         subscriptionIds,
       );
-      products = r.productDetails..sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+      products = r.productDetails
+        ..sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
       notifyListeners();
     } catch (_) {}
   }

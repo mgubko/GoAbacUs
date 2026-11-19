@@ -10,7 +10,13 @@ export 'speech/speech.dart' show Say;
 /// not taken from the device.
 final appLang = ValueNotifier<String>('ru');
 
-const languages = {'ru': 'Русский', 'de': 'Deutsch', 'en': 'English'};
+const languages = {
+  'ru': 'Русский',
+  'de': 'Deutsch',
+  'en': 'English',
+  'fr': 'Français',
+  'es': 'Español',
+};
 
 String tr(String key, [Map<String, Object> args = const {}]) {
   var s = line(appLang.value, key);

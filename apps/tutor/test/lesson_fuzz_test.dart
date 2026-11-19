@@ -57,7 +57,7 @@ void main() {
       var steps = 0;
       while (l.phase != Phase.done) {
         expect(++steps, lessThan(2000), reason: 'stuck: ${l.say}');
-        for (final lang in ['ru', 'de', 'en']) {
+        for (final lang in ['ru', 'de', 'en', 'fr', 'es']) {
           expect(render(l.say, lang), isNot(contains('{')), reason: '${l.say}');
         }
         switch (l.phase) {

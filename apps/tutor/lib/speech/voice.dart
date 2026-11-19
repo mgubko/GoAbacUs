@@ -12,13 +12,12 @@ import 'speech.dart';
 /// and nothing goes to a network. A clip that is missing is skipped, so a
 /// line without a recording is only shown, not spoken.
 class Voice {
-  Voice() {
+  /// Made on the first clip: no player at all while the voice is off.
+  AudioPlayer? _p;
+  AudioPlayer get _player => _p ??= AudioPlayer()
     // Its own cache: the abacus sounds set the global prefix to their
     // package.
-    _player.audioCache = AudioCache(prefix: '');
-  }
-
-  final _player = AudioPlayer();
+    ..audioCache = AudioCache(prefix: '');
   final _index = <String, Map<String, String>>{};
 
   /// The child or the parent turned the voice off (for the whole app).
@@ -31,9 +30,11 @@ class Voice {
     final have = _index[lang];
     if (have != null) return have;
     try {
-      final j = jsonDecode(
-        await rootBundle.loadString('assets/voice/$lang/index.json'),
-      ) as Map<String, Object?>;
+      final j =
+          jsonDecode(
+                await rootBundle.loadString('assets/voice/$lang/index.json'),
+              )
+              as Map<String, Object?>;
       return _index[lang] = j.map((k, v) => MapEntry(k, v as String));
     } catch (_) {
       return _index[lang] = const {};
@@ -46,7 +47,7 @@ class Voice {
     if (s == _last) return;
     _last = s;
     final gen = ++_gen;
-    await _player.stop();
+    await _p?.stop();
     if (!on.value) return;
     final list = clips(s, lang);
     if (list == null) return;
@@ -74,11 +75,11 @@ class Voice {
 
   Future<void> stop() async {
     _gen++;
-    await _player.stop();
+    await _p?.stop();
   }
 
   void dispose() {
     _gen++;
-    _player.dispose();
+    _p?.dispose();
   }
 }

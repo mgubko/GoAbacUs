@@ -174,16 +174,25 @@ class _LessonScreenState extends State<LessonScreen> {
       maintainState: true,
       maintainAnimation: true,
       maintainSize: true,
-      child: AbacusView(controller: _abacus),
+      // A screen reader names the abacus but does not read its value: the
+      // child is meant to count the beads.
+      child: Semantics(
+        label: tr('name_abacus'),
+        child: AbacusView(controller: _abacus),
+      ),
     );
     Widget? over;
     if (l.aidHidden) {
       over = _EyesClosed(aid: l.choice.aid);
     } else if (!showAbacus) {
-      over = AidPicture(
-        aid: l.choice.aid,
-        question: l.question,
-        reveal: l.reveal,
+      over = Semantics(
+        image: true,
+        label: tr('name_${l.choice.aid.name}'),
+        child: AidPicture(
+          aid: l.choice.aid,
+          question: l.question,
+          reveal: l.reveal,
+        ),
       );
     }
     return Stack(fit: StackFit.expand, children: [abacus, ?over]);
@@ -239,7 +248,9 @@ class _LessonScreenState extends State<LessonScreen> {
                   child: GestureDetector(
                     // Tap the owl's words to hear them again.
                     onTap: () => _voice.repeat(appLang.value),
+                    excludeFromSemantics: true,
                     child: _Bubble(
+                      onTap: () => _voice.repeat(appLang.value),
                       text: saying(l.say),
                       happy: l.phase == Phase.right,
                     ),
@@ -267,7 +278,7 @@ class _LessonScreenState extends State<LessonScreen> {
               ),
               _Keypad(
                 onKey: _key,
-                keyHeight: (box.maxHeight * 0.065).clamp(40.0, 56.0),
+                keyHeight: (box.maxHeight * 0.065).clamp(48.0, 56.0),
               ),
             ],
           ),
@@ -398,9 +409,10 @@ class _TaskCard extends StatelessWidget {
 }
 
 class _Bubble extends StatelessWidget {
-  const _Bubble({required this.text, required this.happy});
+  const _Bubble({required this.text, required this.happy, this.onTap});
   final String text;
   final bool happy;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -409,7 +421,12 @@ class _Bubble extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(happy ? '🦉✨' : '🦉', style: const TextStyle(fontSize: 34)),
+          ExcludeSemantics(
+            child: Text(
+              happy ? '🦉✨' : '🦉',
+              style: const TextStyle(fontSize: 34),
+            ),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: AnimatedSwitcher(
@@ -427,7 +444,13 @@ class _Bubble extends StatelessWidget {
                       : const Color(0xFFFFF4D6),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: Text(text, style: const TextStyle(fontSize: 18)),
+                // A screen reader reads each new instruction by itself.
+                child: Semantics(
+                  liveRegion: true,
+                  onTap: onTap,
+                  onTapHint: tr('repeat_hint'),
+                  child: Text(text, style: const TextStyle(fontSize: 18)),
+                ),
               ),
             ),
           ),
@@ -500,7 +523,7 @@ class _Keypad extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget key(String k) => Expanded(
       child: Padding(
-        padding: const EdgeInsets.all(3),
+        padding: const EdgeInsets.symmetric(horizontal: 1.5, vertical: 2),
         child: SizedBox(
           height: keyHeight,
           child: FilledButton(
@@ -514,13 +537,17 @@ class _Keypad extends StatelessWidget {
               ),
             ),
             onPressed: () => onKey(k),
-            child: Text(k, style: const TextStyle(fontSize: 24)),
+            child: Text(
+              k,
+              style: const TextStyle(fontSize: 24),
+              semanticsLabel: k == '⌫' ? tr('erase') : null,
+            ),
           ),
         ),
       ),
     );
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 6),
       child: Column(
         children: [
           Row(children: [for (final k in '12345⌫'.characters) key(k)]),

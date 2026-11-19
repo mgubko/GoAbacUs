@@ -72,6 +72,8 @@ flutter:
     - assets/voice/ru/
     - assets/voice/de/
     - assets/voice/en/
+    - assets/voice/fr/
+    - assets/voice/es/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

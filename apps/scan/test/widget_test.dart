@@ -17,12 +17,19 @@ void main() {
 
   test('every string exists in every language', () {
     final ru = allStrings['ru']!.keys.toSet();
-    for (final l in ['de', 'en']) {
+    for (final l in ['de', 'en', 'fr', 'es']) {
       expect(allStrings[l]!.keys.toSet(), ru, reason: l);
     }
     for (final e in [
-      'no_server', 'offline', 'code_unknown', 'code_used', 'not_paid',
-      'family_mismatch', 'server_error', 'store_not_ready', 'store_error',
+      'no_server',
+      'offline',
+      'code_unknown',
+      'code_used',
+      'not_paid',
+      'family_mismatch',
+      'server_error',
+      'store_not_ready',
+      'store_error',
     ]) {
       expect(ru, contains('lerr_$e'));
     }

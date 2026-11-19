@@ -58,6 +58,8 @@ String placeName(String lang, int row) {
   final names = switch (lang) {
     'ru' => ['единиц', 'десятков', 'сотен', 'тысяч'],
     'de' => ['Einer', 'Zehner', 'Hunderter', 'Tausender'],
+    'fr' => ['unités', 'dizaines', 'centaines', 'milliers'],
+    'es' => ['unidades', 'decenas', 'centenas', 'unidades de millar'],
     _ => ['ones', 'tens', 'hundreds', 'thousands'],
   };
   return row < names.length ? names[row] : '10^$row';
