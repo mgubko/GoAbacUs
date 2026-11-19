@@ -1,0 +1,198 @@
+name: Tutor apps
+
+# GoAbacUs Scan (parent) and GoAbacUs Tutor (child). The GoAbacUs abacus
+# app itself is built by android.yml / ios.yml and is not touched here.
+on:
+  push:
+    branches: ['**']
+    # scan-v1.2.0 / tutor-v1.2.0: signed store builds of that app.
+    tags: ['scan-v*', 'tutor-v*']
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'server/**'
+      - '.github/workflows/tutor-apps.yml'
+  pull_request:
+    paths:
+      - 'apps/**'
+      - 'packages/**'
+      - 'server/**'
+      - '.github/workflows/tutor-apps.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: tutor-apps-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: '3.35.7'
+
+jobs:
+  test:
+    name: Analyze and test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: tutor_tasks (tasks, QR packets, offline page parser)
+        working-directory: packages/tutor_tasks
+        run: |
+          dart pub get
+          dart analyze --fatal-infos
+          dart test
+      - name: Licence server (kit codes, store purchases, signed licences)
+        working-directory: server/license
+        run: |
+          dart pub get
+          dart analyze --fatal-infos
+          dart test
+      - name: abacus_kit (physics, sound, example player)
+        working-directory: packages/abacus_kit
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+      - name: Tutor app (child)
+        working-directory: apps/tutor
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+      - name: Scan app (parent)
+        working-directory: apps/scan
+        run: |
+          flutter pub get
+          flutter analyze
+          flutter test
+
+  apk:
+    name: Debug APK (${{ matrix.app }})
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [scan, tutor]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - working-directory: apps/${{ matrix.app }}
+        run: |
+          flutter pub get
+          flutter build apk --debug --build-number=${{ github.run_number }}
+      - name: The tutor asks for no internet permission
+        if: matrix.app == 'tutor'
+        working-directory: apps/tutor
+        run: |
+          flutter build apk --release --build-number=${{ github.run_number }}
+          m=$(find build -path '*release*' -name AndroidManifest.xml | grep -i merged | head -1)
+          echo "Merged manifest: $m"
+          if grep -q 'android.permission.INTERNET' "$m"; then
+            echo "::error::The release tutor app must not request INTERNET"; exit 1
+          fi
+          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/goabacus-tutor-release-debugsigned.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: goabacus-${{ matrix.app }}-apk
+          path: apps/${{ matrix.app }}/build/app/outputs/flutter-apk/*.apk
+          retention-days: 30
+
+  release:
+    name: Signed release (${{ matrix.app }})
+    # On a tag scan-vX.Y.Z or tutor-vX.Y.Z: an AAB for Play and an APK,
+    # signed with the upload key from the repository secrets (the same
+    # secrets as android.yml). Fails without them: a store build is never
+    # signed with the debug key.
+    if: startsWith(github.ref, 'refs/tags/scan-v') || startsWith(github.ref, 'refs/tags/tutor-v')
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        app: [scan, tutor]
+    steps:
+      - name: Only the tagged app
+        id: pick
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/${{ matrix.app }}-v* ]]; then
+            echo "go=1" >> "$GITHUB_OUTPUT"
+            echo "name=${GITHUB_REF#refs/tags/${{ matrix.app }}-v}" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.pick.outputs.go
+      - uses: actions/setup-java@v4
+        if: steps.pick.outputs.go
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+      - uses: subosito/flutter-action@v2
+        if: steps.pick.outputs.go
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - name: Restore signing key
+        if: steps.pick.outputs.go
+        working-directory: apps/${{ matrix.app }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::error::Signing secrets are missing"; exit 1
+          fi
+          echo "$KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          cat > android/key.properties <<PROPS
+          storeFile=upload-keystore.jks
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=${KEY_PASSWORD:-$KEYSTORE_PASSWORD}
+          PROPS
+      - name: Production licence key is set
+        if: steps.pick.outputs.go
+        run: |
+          if grep -q 'productionLicenseKeys = <String>\[\];' packages/tutor_tasks/lib/src/license_keys.dart; then
+            echo "::error::productionLicenseKeys is empty: a release would accept no licence"; exit 1
+          fi
+      - name: Build
+        if: steps.pick.outputs.go
+        working-directory: apps/${{ matrix.app }}
+        env:
+          LICENSE_SERVER: ${{ vars.LICENSE_SERVER }}
+          # Optional: without it Scan has no crash-report switch.
+          SENTRY_DSN: ${{ vars.SENTRY_DSN }}
+        run: |
+          if [ "${{ matrix.app }}" = scan ] && [ -z "$LICENSE_SERVER" ]; then
+            echo "::error::Set the repository variable LICENSE_SERVER"; exit 1
+          fi
+          args="--build-name=${{ steps.pick.outputs.name }} --build-number=${{ github.run_number }} --obfuscate --split-debug-info=build/symbols --dart-define=LICENSE_SERVER=$LICENSE_SERVER --dart-define=SENTRY_DSN=$SENTRY_DSN"
+          flutter pub get
+          flutter build appbundle --release $args
+          flutter build apk --release $args
+          mkdir -p dist
+          cp build/app/outputs/bundle/release/app-release.aab dist/goabacus-${{ matrix.app }}.aab
+          cp build/app/outputs/flutter-apk/app-release.apk dist/goabacus-${{ matrix.app }}.apk
+          tar czf dist/goabacus-${{ matrix.app }}-symbols.tgz -C build symbols
+      - uses: actions/upload-artifact@v4
+        if: steps.pick.outputs.go
+        with:
+          name: goabacus-${{ matrix.app }}-release
+          path: apps/${{ matrix.app }}/dist/
+      - name: Remove signing key
+        if: always() && steps.pick.outputs.go
+        working-directory: apps/${{ matrix.app }}
+        run: rm -f android/app/upload-keystore.jks android/key.properties
