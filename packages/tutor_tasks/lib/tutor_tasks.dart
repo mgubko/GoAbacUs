@@ -9,3 +9,4 @@ export 'src/worksheet_parser.dart';
 export 'src/handoff.dart';
 export 'src/license.dart';
 export 'src/license_keys.dart';
+export 'src/transfer.dart';

@@ -95,6 +95,34 @@ class FamilyStore {
     await _p.setStringList('reports', [code, ...old]);
   }
 
+  /// The whole family, for the new phone.
+  FamilyTransfer exportFamily() => FamilyTransfer(
+    key: key,
+    kids: kids,
+    license: license,
+    seq: _p.getInt('seq') ?? 0,
+  );
+
+  /// Takes over the family from the old phone. This phone's own family
+  /// (if it had one) is replaced, with its sent packets and reports.
+  Future<void> importFamily(FamilyTransfer t) async {
+    await _p.setString('fam_id', t.key.id);
+    await _p.setString('fam_key', t.key.encodedSecret);
+    await _p.setStringList('kids', [
+      for (final k in t.kids) jsonEncode(k.toJson()),
+    ]);
+    if (t.license != null) {
+      await _p.setString('license', t.license!);
+    } else {
+      await _p.remove('license');
+    }
+    await _p.remove('license_refresh');
+    final seq = _p.getInt('seq') ?? 0;
+    await _p.setInt('seq', t.seq > seq ? t.seq : seq);
+    await _p.remove('sent');
+    await _p.remove('reports');
+  }
+
   String? get lang => _p.getString('lang');
   Future<void> setLang(String l) => _p.setString('lang', l);
 }

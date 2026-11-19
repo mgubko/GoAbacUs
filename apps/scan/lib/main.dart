@@ -283,6 +283,76 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  /// The old phone: the family as a QR code, for a few minutes.
+  void _moveOut() {
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(tr('move_out')),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              QrCodes(store.exportFamily().encode(), size: 240),
+              const SizedBox(height: 8),
+              Text(tr('move_out_text')),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(tr('cancel')),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The new phone: reads the old phone's code and takes the family over.
+  Future<void> _moveIn() async {
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => QrScanPage(
+          title: tr('move_in'),
+          hint: tr('move_in_hint'),
+          accept: (c) =>
+              FamilyTransfer.decode(c) == null ? tr('move_bad') : null,
+        ),
+      ),
+    );
+    if (code == null || !mounted) return;
+    final t = FamilyTransfer.decode(code);
+    if (t == null) return;
+    if (t.key.id != store.key.id && store.kids.isNotEmpty) {
+      final ok = await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(tr('move_replace')),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(tr('cancel')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(tr('move_in')),
+            ),
+          ],
+        ),
+      );
+      if (ok != true) return;
+    }
+    await store.importFamily(t);
+    if (!mounted) return;
+    setState(() {});
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(tr('move_done', {'n': t.kids.length})),
+      ),
+    );
+  }
+
   Future<void> _readReport() async {
     final code = await Navigator.of(context).push<String>(
       MaterialPageRoute(
@@ -365,6 +435,15 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: Text(tr('app')),
         actions: [
+          PopupMenuButton<String>(
+            tooltip: tr('move_family'),
+            icon: const Icon(Icons.phonelink_setup),
+            onSelected: (v) => v == 'out' ? _moveOut() : _moveIn(),
+            itemBuilder: (_) => [
+              PopupMenuItem(value: 'out', child: Text(tr('move_out'))),
+              PopupMenuItem(value: 'in', child: Text(tr('move_in'))),
+            ],
+          ),
           PopupMenuButton<String>(
             icon: const Icon(Icons.language),
             onSelected: (l) {
