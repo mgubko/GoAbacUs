@@ -4,6 +4,7 @@ import 'package:abacus_kit/abacus_kit.dart';
 import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:tutor_camera/tutor_camera.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -321,6 +322,11 @@ class _HomeScreenState extends State<HomeScreen> {
               tooltip: tr('report'),
               onPressed: _showReport,
             ),
+          IconButton(
+            icon: const Icon(Icons.videocam_outlined),
+            tooltip: tr('camera_view'),
+            onPressed: () => DeskCameraScreen.open(context, preferFront: true),
+          ),
           _langMenu(),
         ],
       ),
