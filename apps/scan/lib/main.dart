@@ -1,7 +1,11 @@
+import 'dart:async';
+
+import 'package:app_links/app_links.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'qr.dart';
 import 'recognize.dart';
@@ -57,6 +61,49 @@ class _HomeScreenState extends State<HomeScreen> {
   FamilyStore get store => widget.store;
   late Kid? _kid = store.kids.firstOrNull;
   bool _busy = false;
+  StreamSubscription<Uri>? _links;
+
+  @override
+  void initState() {
+    super.initState();
+    // The tutor on this phone hands the report back by an app link.
+    _links = AppLinks().uriLinkStream.listen(_onLink, onError: (_) {});
+  }
+
+  @override
+  void dispose() {
+    _links?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _onLink(Uri uri) async {
+    final code = Handoff.parse(uri)?.report;
+    if (code == null) return;
+    final r = LessonReport.decode(code, store.key);
+    if (r == null) return;
+    await store.addReport(code);
+    if (!mounted) return;
+    setState(() {});
+    _openReport(r);
+  }
+
+  /// The parent gives this phone to the child: open the tutor here with
+  /// the tasks (and the pairing, in case the tutor is new on this phone).
+  Future<void> _onThisPhone(Kid kid, {String? packet}) async {
+    final uri = Handoff(
+      pairing: Pairing(store.key, kid).encode(),
+      packet: packet,
+    ).toTutor();
+    var ok = false;
+    try {
+      ok = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } catch (_) {}
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr('no_tutor_here'))),
+      );
+    }
+  }
 
   Future<void> _addKid() async {
     final kid = await showDialog<Kid>(
@@ -86,6 +133,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
         actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              _onThisPhone(kid);
+            },
+            child: Text(tr('this_phone')),
+          ),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('OK'),
@@ -172,6 +226,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(tr('qr_text'), textAlign: TextAlign.center),
+                  const SizedBox(height: 24),
+                  if (store.kids.where((k) => k.id == p.kid).firstOrNull
+                      case final kid?)
+                    FilledButton.icon(
+                      onPressed: () => _onThisPhone(kid, packet: code),
+                      icon: const Icon(Icons.child_care),
+                      label: Text(tr('continue_here')),
+                    ),
+                  const SizedBox(height: 8),
+                  Text(
+                    tr('continue_here_text'),
+                    textAlign: TextAlign.center,
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ],
               ),
             ),

@@ -62,6 +62,10 @@ const _t = <String, Map<String, String>>{
     'cancel': 'Отмена',
     'save': 'Сохранить',
     'qr_title': 'Покажите код ребёнку',
+    'continue_here': 'Продолжить на этом телефоне',
+    'continue_here_text': 'Если репетитор стоит на этом же телефоне: откроется занятие, отдайте телефон ребёнку. Отчёт вернётся сюда сам.',
+    'this_phone': 'На этом телефоне',
+    'no_tutor_here': 'На этом телефоне нет GoAbacUs Tutor. Установите его или покажите код другому устройству.',
     'qr_text':
         'На устройстве ребёнка: «Получить задания» и навести камеру на этот код. Интернет не нужен.',
     'for_kid': 'Для: {name}',
@@ -137,6 +141,10 @@ const _t = <String, Map<String, String>>{
     'cancel': 'Abbrechen',
     'save': 'Speichern',
     'qr_title': 'Code dem Kind zeigen',
+    'continue_here': 'Auf diesem Handy weitermachen',
+    'continue_here_text': 'Wenn der Tutor auf diesem Handy ist: Die Übung öffnet sich, geben Sie das Handy dem Kind. Der Bericht kommt von selbst zurück.',
+    'this_phone': 'Auf diesem Handy',
+    'no_tutor_here': 'GoAbacUs Tutor ist auf diesem Handy nicht installiert. Installieren Sie ihn oder zeigen Sie den Code einem anderen Gerät.',
     'qr_text':
         'Auf dem Gerät des Kindes „Aufgaben holen“ und die Kamera auf diesen Code richten. Kein Internet nötig.',
     'for_kid': 'Für: {name}',
@@ -210,6 +218,10 @@ const _t = <String, Map<String, String>>{
     'cancel': 'Cancel',
     'save': 'Save',
     'qr_title': 'Show the code to the child',
+    'continue_here': 'Continue on this phone',
+    'continue_here_text': 'If the tutor is on this phone: the lesson opens, hand the phone to your child. The report comes back here by itself.',
+    'this_phone': 'On this phone',
+    'no_tutor_here': 'GoAbacUs Tutor is not installed on this phone. Install it or show the code to another device.',
     'qr_text':
         'On the child’s device tap “Get tasks” and point the camera at this code. No internet needed.',
     'for_kid': 'For: {name}',

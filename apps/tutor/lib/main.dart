@@ -1,7 +1,11 @@
+import 'dart:async';
+
 import 'package:abacus_kit/abacus_kit.dart';
+import 'package:app_links/app_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:tutor_tasks/tutor_tasks.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import 'lesson.dart';
 import 'lesson_screen.dart';
@@ -57,6 +61,94 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   TutorStore get store => widget.store;
   String? _message;
+  StreamSubscription<Uri>? _links;
+
+  /// The tasks came from the parent's app on this same phone: the report
+  /// can go back the same way.
+  bool _samePhone = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Also delivers the link that started the app.
+    _links = AppLinks().uriLinkStream.listen(_onLink, onError: (_) {});
+  }
+
+  @override
+  void dispose() {
+    _links?.cancel();
+    super.dispose();
+  }
+
+  /// The parent's app on this phone handed over the pairing and a page.
+  Future<void> _onLink(Uri uri) async {
+    final h = Handoff.parse(uri);
+    if (h == null) return;
+    final p = h.pairing == null ? null : Pairing.decode(h.pairing!);
+    final now = store.pairing;
+    if (p != null) {
+      final ok =
+          now == null ||
+          now.key.id == p.key.id ||
+          await _confirm(tr('repair_q', {'name': p.kid.name}));
+      if (!ok) return;
+      // Same family: the kid's settings (aids at home) may have changed.
+      await store.setPairing(p);
+      if (store.lang == null) appLang.value = p.kid.homeLang;
+    }
+    final key = store.pairing?.key;
+    final code = h.packet;
+    if (key == null || code == null) {
+      if (mounted) setState(() {});
+      return;
+    }
+    final packet = TaskPacket.decode(code, key);
+    if (packet == null) return;
+    await store.add(code, packet);
+    final queued = store.queue.where((q) => q.id == packet.id).firstOrNull;
+    if (!mounted) return;
+    if (queued == null) {
+      setState(() => _message = tr('already_done'));
+      return;
+    }
+    _samePhone = true;
+    Navigator.of(context).popUntil((r) => r.isFirst);
+    await _start(queued);
+  }
+
+  Future<bool> _confirm(String text) async =>
+      await showDialog<bool>(
+        context: context,
+        builder: (context) => AlertDialog(
+          content: Text(text),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(tr('no')),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(tr('yes')),
+            ),
+          ],
+        ),
+      ) ??
+      false;
+
+  Future<void> _backToParent(String code) async {
+    var ok = false;
+    try {
+      ok = await launchUrl(
+        Handoff(report: code).toScan(),
+        mode: LaunchMode.externalApplication,
+      );
+    } catch (_) {}
+    if (!ok && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(tr('no_scan_here'))),
+      );
+    }
+  }
 
   Future<void> _pair() async {
     final code = await Navigator.of(context).push<String>(
@@ -127,6 +219,14 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         actions: [
+          if (_samePhone)
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _backToParent(code);
+              },
+              child: Text(tr('back_to_parent')),
+            ),
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('OK'),
